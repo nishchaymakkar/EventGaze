@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.minorproject.e_commerce" />
-                  <option name="mobileSdkAppId" value="1:742724994667:android:b503f1fa8b2aca28fbd32e" />
-                  <option name="projectId" value="e-commerce-f30fc" />
-                  <option name="projectNumber" value="742724994667" />
+                  <option name="appId" value="com.minorproject.eventgaze" />
+                  <option name="mobileSdkAppId" value="1:377688751073:android:c389f6f55a873152e9b0a0" />
+                  <option name="projectId" value="eventgaze-3e24c" />
+                  <option name="projectNumber" value="377688751073" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

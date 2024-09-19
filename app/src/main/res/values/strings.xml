@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">E-Commerce</string>
+    <string name="app_name">Event Gaze</string>
     <string name="sign_in">Sign In</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -29,5 +29,7 @@
     <string name="cancel">Cancel</string>
     <string name="sign_out_title">Do you want to Sign Out?</string>
     <string name="sign_out_description">You have to login again.</string>
+    <string name="discover">Discover</string>
+    <string name="colleges">Colleges</string>
 
 </resources>

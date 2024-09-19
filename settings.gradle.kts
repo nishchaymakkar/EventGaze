@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "E-Commerce"
+rootProject.name = "EventGaze"
 include(":app")

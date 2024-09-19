@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.minorproject.e_commerce"
+    namespace = "com.minorproject.eventgaze"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.minorproject.e_commerce"
+        applicationId = "com.minorproject.eventgaze"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -88,5 +88,10 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics:18.4.1")  // or the latest version
 
     implementation( "androidx.compose.material:material:1.6.8")
+    implementation("androidx.compose.material:material-icons-extended:1.7.2")
+    implementation(kotlin("script-runtime"))
+
+    implementation( "androidx.compose.ui:ui-graphics:1.7.2" )// Or the latest version
+
 
 }
