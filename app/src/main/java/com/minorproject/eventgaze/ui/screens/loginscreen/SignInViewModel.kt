@@ -1,6 +1,10 @@
 package com.minorproject.eventgaze.ui.screens.loginscreen
 
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat.startActivityForResult
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.SignInScreen
 import com.minorproject.eventgaze.R.string as AppText
@@ -13,6 +17,7 @@ import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+const val GOOGLE_SIGN_IN_REQUEST_CODE = 200
 
 
 @HiltViewModel
@@ -65,5 +70,23 @@ class SignInViewModel @Inject constructor(
         }
     }
     fun onSignUpClick(navigate: (String) -> Unit )= navigate(SignUpScreen)
+
+
+
+    fun getGoogleSignInIntent(activity: Activity): Intent {
+        return accountService.signInWithGoogle(activity)
+    }
+
+
+    fun handleGoogleSignInResult(account: GoogleSignInAccount, openAndPopUp: (String, String) -> Unit) {
+        launchCatching {
+            val result = accountService.handleGoogleSignInResult(account)
+            if (result.isSuccess) {
+                openAndPopUp(MainScreen, SignInScreen)
+            } else {
+                SnackbarManager.showMessage(AppText.sign_in_failed)
+            }
+        }
+    }
 
 }

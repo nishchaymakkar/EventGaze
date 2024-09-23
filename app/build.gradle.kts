@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.palette.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,18 +81,22 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     //dagger
-    implementation ("com.google.dagger:hilt-android:2.48")
+    implementation ("com.google.dagger:hilt-android:2.49")
 
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     ksp ("com.google.dagger:hilt-compiler:2.48")
 
-    implementation("com.google.firebase:firebase-crashlytics:18.4.1")  // or the latest version
+    implementation("com.google.firebase:firebase-crashlytics:19.1.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")// or the latest version
 
-    implementation( "androidx.compose.material:material:1.6.8")
+    implementation( "androidx.compose.material:material:1.7.2")
     implementation("androidx.compose.material:material-icons-extended:1.7.2")
     implementation(kotlin("script-runtime"))
 
     implementation( "androidx.compose.ui:ui-graphics:1.7.2" )// Or the latest version
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation( "androidx.palette:palette-ktx:1.0.0")
 
+    implementation(libs.androidx.compose.animation)
 
 }

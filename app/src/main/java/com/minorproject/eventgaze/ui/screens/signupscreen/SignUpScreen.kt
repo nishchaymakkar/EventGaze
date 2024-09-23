@@ -78,12 +78,12 @@ fun SignUpScreenContent(
             horizontalArrangement = Arrangement.Center
         ) {
             Image(modifier = modifier
-                .size(350.dp).padding(start = 8.dp, end = 8.dp)
+                .size(350.dp).padding(top = 20.dp, start = 8.dp, end = 8.dp)
                 .clip(shape = RectangleShape),
                 contentScale = ContentScale.Fit, painter = painterResource(id = R.drawable.signupscreenimage), contentDescription = null)
         }
         Column(
-            modifier.weight(1f)
+            modifier.weight(1.5f)
         ) {
 
 

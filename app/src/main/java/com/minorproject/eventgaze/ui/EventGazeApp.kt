@@ -3,6 +3,11 @@
 package com.minorproject.eventgaze.ui
 
 import android.content.res.Resources
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.collection.intIntMapOf
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -35,8 +40,16 @@ import kotlinx.coroutines.CoroutineScope
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable
+import com.minorproject.eventgaze.CollegeEventScreen
+import com.minorproject.eventgaze.DetailScreen
 import com.minorproject.eventgaze.ui.screens.homescreen.MainScreen
 import com.minorproject.eventgaze.MainScreen
+import com.minorproject.eventgaze.model.data.Event
+import com.minorproject.eventgaze.ui.screens.colleges_screen.CollegeEventScreen
+import com.minorproject.eventgaze.ui.screens.detailScreen.DetailScreen
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 
 
@@ -57,9 +70,13 @@ fun resources(): Resources {
     LocalConfiguration.current
     return LocalContext.current.resources
 }
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@RequiresApi(Build.VERSION_CODES.S)
 @ExperimentalMaterialApi
 @ExperimentalMaterial3Api
 fun NavGraphBuilder.ecommerceGraph(appState: EventGazeAppState){
+
     composable(SplashScreen){
         SplashScreen(openAndPopUp = {route, popUp -> appState.navigateAndPopUp(route, popUp)})
     }
@@ -72,37 +89,53 @@ fun NavGraphBuilder.ecommerceGraph(appState: EventGazeAppState){
           popUp = {  appState.popUp()})
     }
     composable(MainScreen){
-        MainScreen(navigate = {route -> appState.clearAndNavigate(route)})
+        MainScreen(navigate = {route -> appState.clearAndNavigate(route)},
+            detailnavigate = {route -> appState.navigate(route)})
+    }
+    composable("$DetailScreen/{eventId}",
+        arguments = listOf(navArgument("eventId"){type = NavType.IntType})
+    ){backStackEntry ->
+        val eventId = backStackEntry.arguments?.getInt("eventId")
+        DetailScreen(eventId = eventId)
+    }
+    composable("$CollegeEventScreen/{collegeId}",
+        arguments = listOf(navArgument("collegeId"){type = NavType.IntType})
+    ) { backStackEntry ->
+        val collegeId = backStackEntry.arguments?.getInt("collegeId")
+        CollegeEventScreen(collegeId = collegeId, detailnavigate = {route -> appState.navigate(route)})
     }
 }
 
 
 
 
+@ExperimentalSharedTransitionApi
+@RequiresApi(Build.VERSION_CODES.S)
 @ExperimentalMaterialApi
 @ExperimentalMaterial3Api
 @Composable
 fun EventGazeApp(modifier: Modifier = Modifier.verticalScroll(rememberScrollState())) {
     EventGazeTheme {
 
-            Surface(color = androidx.compose.material.MaterialTheme.colors.background) {
-                val appState = rememberAppState()
+        Surface(color = androidx.compose.material.MaterialTheme.colors.background) {
+            val appState = rememberAppState()
 
-                androidx.compose.material.Scaffold(
-                    snackbarHost = {
-                        SnackbarHost(
-                            hostState = it,
-                            modifier = Modifier.padding(8.dp),
-                            snackbar = { snackbarData ->
-                                Snackbar(
-                                    snackbarData,
-                                    contentColor = androidx.compose.material.MaterialTheme.colors.onPrimary
-                                )
-                            }
-                        )
-                    },
-                    scaffoldState = appState.scaffoldState
-                ) { innerPaddingModifier ->
+            androidx.compose.material.Scaffold(
+                snackbarHost = {
+                    SnackbarHost(
+                        hostState = it,
+                        modifier = Modifier.padding(8.dp),
+                        snackbar = { snackbarData ->
+                            Snackbar(
+                                snackbarData,
+                                contentColor = androidx.compose.material.MaterialTheme.colors.onPrimary
+                            )
+                        }
+                    )
+                },
+                scaffoldState = appState.scaffoldState
+            ) { innerPaddingModifier ->
+                SharedTransitionScope {
                     NavHost(
                         navController = appState.navController,
                         startDestination = SplashScreen,
@@ -113,5 +146,5 @@ fun EventGazeApp(modifier: Modifier = Modifier.verticalScroll(rememberScrollStat
                 }
             }
         }
-
+    }
 }

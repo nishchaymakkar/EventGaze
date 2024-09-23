@@ -1,5 +1,6 @@
 package com.minorproject.eventgaze.ui.screens.loginscreen
 
+import android.app.Activity
 import android.graphics.RenderEffect.*
 import android.graphics.Shader
 import android.graphics.Shader.TileMode
@@ -51,6 +52,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import android.graphics.RenderEffect
 import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.Card
@@ -59,6 +63,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 import com.minorproject.eventgaze.ui.theme.primary
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -70,14 +78,27 @@ fun SignInScreen(
     viewModel: SignInViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
-
+    val activity = LocalContext.current as Activity
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            viewModel.handleGoogleSignInResult(account, openAndPopUp)
+        } catch (e: ApiException) {
+            Log.d("Sign In Failed", "$e")
+            SnackbarManager.showMessage(R.string.sign_in_failed)
+        }
+    }
     SignInScreenContent(
         uiState = uiState,
         onEmailChange = viewModel::onEmailChange ,
         onPasswordChange = viewModel::onPasswordChange,
         onSignInClick = { viewModel.onSignInClick(openAndPopUp)},
         onSignUpClick = { viewModel.onSignUpClick(navigate) },
-        onForgotPasswordClick = viewModel::onForgotPasswordClick)
+        onForgotPasswordClick = viewModel::onForgotPasswordClick,
+        onLoginWithGoogle = {launcher.launch(viewModel.getGoogleSignInIntent(activity))})
 
 
 
@@ -93,6 +114,7 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
     onSignUpClick: ()  -> Unit,
     onForgotPasswordClick: () -> Unit,
     onPasswordChange: (String)-> Unit,
+    onLoginWithGoogle: () -> Unit
 ){
     Column(
         modifier = modifier
@@ -119,7 +141,7 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
 
 
         Row(modifier = modifier
-            .padding(start = 16.dp)
+            .padding(start = 16.dp).fillMaxWidth()
             .size(width = 100.dp, height = 50.dp)){
             Text(text = stringResource(id = R.string.sign_in),
                 style = MaterialTheme.typography.headlineLarge,
@@ -156,7 +178,7 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
         BasicButton(text = R.string.login_google, modifier = modifier
             .fillMaxWidth()
             .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
-            action = onSignInClick,
+            action = onLoginWithGoogle
         )
         Row(
             modifier
@@ -192,7 +214,8 @@ private fun SignInScreenPreview() {
             onSignInClick = {},
             onForgotPasswordClick = {},
             onPasswordChange = {},
-            onSignUpClick = {}
+            onSignUpClick = {},
+            onLoginWithGoogle = {}
         )
     }
     

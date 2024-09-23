@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.minorproject.eventgaze.DetailScreen
 import com.minorproject.eventgaze.model.data.items
 import com.minorproject.eventgaze.ui.screens.colleges_screen.CollegesScreen
 import com.minorproject.eventgaze.ui.screens.profilescreen.ProfileScreen
@@ -33,7 +34,8 @@ import com.minorproject.eventgaze.ui.screens.profilescreen.ProfileScreen
 @Composable
 fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel(),
-    navigate: (String) -> Unit
+    navigate: (String) -> Unit,
+    detailnavigate: (String) -> Unit
     ){
     var selectedItemIndex by rememberSaveable {
         mutableStateOf(0)
@@ -90,13 +92,16 @@ fun MainScreen(
                 .background(color = MaterialTheme.colorScheme.onPrimary))
         {
             when (selectedItemIndex) {
-                0 -> HomeScreenContent( modifier = Modifier)
-                1 -> CollegesScreen(Modifier)
+                0 -> HomeScreenContent( modifier = Modifier, onItemClick ={ event,_ ->
+                   viewModel.onItemClick(event.id, detailnavigate)
+                })
+                1 -> CollegesScreen(Modifier, onCollegeClick = {college,_ ->
+                    viewModel.onCollegeClick(college.collegeId,detailnavigate)
+                })
                 2 -> {val username by  viewModel.userName.collectAsState()
                     ProfileScreen(
                         Modifier,
                         onSignOutClick = { viewModel.onSignOutClick(navigate) },
-
                         username = username
                     )
                 }

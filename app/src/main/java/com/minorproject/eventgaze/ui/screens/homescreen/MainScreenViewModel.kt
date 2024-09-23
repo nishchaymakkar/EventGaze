@@ -2,6 +2,10 @@ package com.minorproject.eventgaze.ui.screens.homescreen
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.minorproject.eventgaze.CollegeEventScreen
+import com.minorproject.eventgaze.DetailScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.minorproject.eventgaze.SplashScreen
 import com.minorproject.eventgaze.model.service.AccountService
@@ -20,6 +24,7 @@ class MainScreenViewModel @Inject constructor(
     fun onSignOutClick(restartApp: (String) -> Unit) {
         launchCatching {
             accountService.signOut()
+            Firebase.auth.signOut()
             restartApp(SplashScreen)
         }
     }
@@ -30,7 +35,14 @@ class MainScreenViewModel @Inject constructor(
         // Load the user's name when the ViewModel is created
         loadUserName()
     }
-
+    fun onItemClick(eventId: Int,navigate: (String) -> Unit){
+        val destination ="$DetailScreen/$eventId"
+        navigate(destination)
+    }
+    fun onCollegeClick(collegeId: Int,navigate: (String) -> Unit){
+        val destination = "${CollegeEventScreen}/$collegeId"
+        navigate(destination)
+    }
     // Function to load the user's name from AccountService
     private fun loadUserName() {
         viewModelScope.launch {

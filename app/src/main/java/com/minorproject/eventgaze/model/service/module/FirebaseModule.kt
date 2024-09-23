@@ -16,6 +16,9 @@ limitations under the License.
 
 package com.minorproject.eventgaze.model.service.module
 
+import android.app.Activity
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,4 +35,5 @@ object FirebaseModule {
   @Provides fun auth(): FirebaseAuth = Firebase.auth
 
   @Provides fun firestore(): FirebaseFirestore = Firebase.firestore
+
 }

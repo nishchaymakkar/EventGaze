@@ -31,5 +31,8 @@
     <string name="sign_out_description">You have to login again.</string>
     <string name="discover">Discover</string>
     <string name="colleges">Colleges</string>
+    <string name="default_web_client_id">377688751073-lkmujf5kim8vepqnejra8qes3uv86t8b.apps.googleusercontent.com</string>
+
+    <string name="sign_in_failed">Sign in Failed</string>
 
 </resources>
