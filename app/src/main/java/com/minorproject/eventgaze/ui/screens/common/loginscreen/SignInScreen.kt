@@ -1,10 +1,6 @@
-package com.minorproject.eventgaze.ui.screens.loginscreen
+package com.minorproject.eventgaze.ui.screens.common.loginscreen
 
 import android.app.Activity
-import android.graphics.RenderEffect.*
-import android.graphics.Shader
-import android.graphics.Shader.TileMode
-import androidx.annotation.FloatRange
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,20 +12,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,39 +32,23 @@ import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.ui.common.components.BasicButton
 import com.minorproject.eventgaze.ui.common.components.EmailTextField
 import com.minorproject.eventgaze.ui.common.components.OrDivider
-import com.minorproject.eventgaze.ui.common.components.PasswordField
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import android.graphics.RenderEffect
 import android.os.Build
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Canvas
-import androidx.compose.material3.Card
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import com.minorproject.eventgaze.ui.common.components.PasswordFieldForSignIn
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
-import com.minorproject.eventgaze.ui.theme.primary
 
 @RequiresApi(Build.VERSION_CODES.S)
 @ExperimentalMaterial3Api
 @Composable
 fun SignInScreen(
-    openAndPopUp: (String, String) -> Unit,
+    openAndPopUp: (String, String) ->Unit,
     navigate: (String) -> Unit,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
@@ -108,95 +83,82 @@ fun SignInScreen(
 @ExperimentalMaterial3Api
 @Composable
 fun SignInScreenContent(modifier: Modifier = Modifier,
-    uiState: SignInState,
-    onEmailChange: (String) -> Unit,
-    onSignInClick: () -> Unit,
-    onSignUpClick: ()  -> Unit,
-    onForgotPasswordClick: () -> Unit,
-    onPasswordChange: (String)-> Unit,
-    onLoginWithGoogle: () -> Unit
+                        uiState: SignInState,
+                        onEmailChange: (String) -> Unit,
+                        onSignInClick: () -> Unit,
+                        onSignUpClick: ()  -> Unit,
+                        onForgotPasswordClick: () -> Unit,
+                        onPasswordChange: (String)-> Unit,
+                        onLoginWithGoogle: () -> Unit
 ){
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.onPrimary)
+            .background(color = MaterialTheme.colorScheme.onPrimary),
+        verticalArrangement = Arrangement.Center
 //            .verticalScroll(
 //                rememberScrollState()
 //            ),
     ) {
-        Row(
-            modifier = modifier.weight(1f) ,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Image(modifier = modifier
-                .size(400.dp)
-                .clip(shape = RectangleShape).padding(start = 8.dp, end = 8.dp),
-                contentScale = ContentScale.Fit,
-                painter = painterResource(id = R.drawable.signinscreenimage),
-                contentDescription = null)
-        }
-        Column(
-            modifier.weight(1.5f)
-        ) {
-
-
         Row(modifier = modifier
-            .padding(start = 16.dp).fillMaxWidth()
-            .size(width = 100.dp, height = 50.dp)){
+            .padding(start = 16.dp,end= 16.dp).fillMaxWidth()
+            .size(width = 150.dp, height = 50.dp)){
             Text(text = stringResource(id = R.string.sign_in),
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.secondary
-                )
-        }
-        Column(
-            modifier = modifier
-                .padding(start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ){
-            EmailTextField(value = uiState.email, onNewValue = onEmailChange, modifier = modifier.fillMaxWidth())
-
-            PasswordField(value = uiState.password, onNewValue = onPasswordChange, modifier = modifier.fillMaxWidth())
-        }
-        Row(
-            modifier = modifier
-                .padding(start = 36.dp, top = 16.dp)
-        ) {
-            Text(text = stringResource(id = R.string.forgotPassword),
-                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = modifier.clickable(onClick = onForgotPasswordClick))
+                fontWeight = FontWeight.Bold
+            )
         }
 
-        BasicButton(text = R.string.login, modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
-          action =   onSignInClick,
-        )
-        OrDivider()
 
-        BasicButton(text = R.string.login_google, modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
-            action = onLoginWithGoogle
-        )
-        Row(
-            modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(text = stringResource(id = R.string.donthaveanacc),color = MaterialTheme.colorScheme.secondary)
-            Spacer(modifier = modifier.size(4.dp))
-            Text(text = stringResource(id = R.string.signup),
-                modifier= modifier.clickable(onClick = onSignUpClick),
-                color =MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold)
+            Column(
+                modifier = modifier
+                    .padding(start = 16.dp, end = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ){
+                EmailTextField(value = uiState.email, onNewValue = onEmailChange, modifier = modifier.fillMaxWidth())
+
+                PasswordFieldForSignIn(value = uiState.password, onNewValue = onPasswordChange, modifier = modifier.fillMaxWidth())
+            }
+            Row(
+                modifier = modifier
+                    .padding(start = 36.dp, top = 16.dp)
+            ) {
+                Text(text = stringResource(id = R.string.forgotPassword),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = modifier.clickable(onClick = onForgotPasswordClick))
+            }
+
+            BasicButton(text = R.string.login, modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+                action =   onSignInClick,
+            )
+            OrDivider()
+
+            BasicButton(text = R.string.login_google, modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+                action = onLoginWithGoogle
+            )
+            Row(
+                modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(text = stringResource(id = R.string.donthaveanacc),color = MaterialTheme.colorScheme.secondary)
+                Spacer(modifier = modifier.size(4.dp))
+                Text(text = stringResource(id = R.string.signup),
+                    modifier= modifier.clickable(onClick = onSignUpClick),
+                    color =MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold)
+            }
         }
-    }
-    }
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -220,3 +182,7 @@ private fun SignInScreenPreview() {
     }
     
 }
+
+
+
+

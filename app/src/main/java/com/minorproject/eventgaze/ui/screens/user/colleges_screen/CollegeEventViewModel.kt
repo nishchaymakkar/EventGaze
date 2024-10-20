@@ -1,4 +1,4 @@
-package com.minorproject.eventgaze.ui.screens.colleges_screen
+package com.minorproject.eventgaze.ui.screens.user.colleges_screen
 
 import androidx.lifecycle.ViewModel
 import com.minorproject.eventgaze.DetailScreen

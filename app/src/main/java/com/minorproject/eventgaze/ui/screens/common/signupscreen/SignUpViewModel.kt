@@ -1,6 +1,6 @@
 
 
-package com.minorproject.eventgaze.ui.screens.signupscreen
+package com.minorproject.eventgaze.ui.screens.common.signupscreen
 
 import androidx.compose.runtime.mutableStateOf
 import com.minorproject.eventgaze.R.string as AppText
@@ -22,11 +22,16 @@ class SignUpViewModel @Inject constructor(
 ) : EventGazeViewModel(logService) {
   var uiState = mutableStateOf(SignUpUiState())
     private set
-
+  private val orgName
+    get() = uiState.value.orgName
   private val email
     get() = uiState.value.email
   private val password
     get() = uiState.value.password
+
+  fun onOrgNameChange(newValue: String) {
+    uiState.value = uiState.value.copy(orgName = newValue)
+  }
 
   fun onEmailChange(newValue: String) {
     uiState.value = uiState.value.copy(email = newValue)

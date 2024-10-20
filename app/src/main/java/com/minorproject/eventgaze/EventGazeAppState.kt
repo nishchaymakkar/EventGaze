@@ -3,6 +3,7 @@ package com.minorproject.eventgaze
 import android.content.res.Resources
 import android.util.Log
 import androidx.compose.material.ScaffoldState
+import androidx.compose.material3.SnackbarHostState
 import androidx.navigation.NavHostController
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 import com.minorproject.eventgaze.ui.common.components.SnackbarMessage.Companion.toMessage
@@ -12,7 +13,7 @@ import kotlinx.coroutines.launch
 
 
 class EventGazeAppState(
-    val scaffoldState: ScaffoldState,
+    val scaffoldHostState: SnackbarHostState,
     val navController: NavHostController,
     private val snackbarManager: SnackbarManager,
     private val resources: Resources,
@@ -22,7 +23,7 @@ class EventGazeAppState(
         coroutineScope.launch {
             snackbarManager.snackbarMessages.filterNotNull().collect { snackbarMessage ->
                 val text = snackbarMessage.toMessage(resources)
-                scaffoldState.snackbarHostState.showSnackbar(text)
+                scaffoldHostState.showSnackbar(text)
                 snackbarManager.clearSnackbarState()
             }
         }

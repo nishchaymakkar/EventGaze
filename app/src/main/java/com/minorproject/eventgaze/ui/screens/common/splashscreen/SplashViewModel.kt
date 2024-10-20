@@ -1,5 +1,6 @@
-package com.minorproject.eventgaze.ui.screens.splashscreen
+package com.minorproject.eventgaze.ui.screens.common.splashscreen
 
+import com.minorproject.eventgaze.HomeScreenP
 import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.SignInScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +18,15 @@ class SplashViewModel @Inject constructor(
     logService: LogService,
 ) : EventGazeViewModel(logService){
  fun onAppStart(openAndPopUp: (String,String)-> Unit){
+
+//     when (accountService.role) {
+//         "user" -> {if (accountService.hasUser) openAndPopUp(MainScreen, SplashScreen) }
+//         "publisher" -> {if (accountService.hasUser) openAndPopUp(HomeScreenP,
+//             SplashScreen)}
+//         else -> openAndPopUp(SignInScreen, SplashScreen)
+//     }
      if (accountService.hasUser) openAndPopUp(MainScreen, SplashScreen)
-     else openAndPopUp(SignInScreen, SplashScreen)
+     else  openAndPopUp(SignInScreen, SplashScreen)
+
  }
 }

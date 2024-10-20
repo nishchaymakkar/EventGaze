@@ -1,4 +1,4 @@
-package com.minorproject.eventgaze.ui.screens.profilescreen
+package com.minorproject.eventgaze.ui.screens.user.profilescreen
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -55,6 +55,7 @@ import com.minorproject.eventgaze.R.string as AppText
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onSignOutClick: () -> Unit,
+    onPiClick: () -> Unit,
     username: String?,
 ){
     Column (
@@ -63,7 +64,6 @@ fun ProfileScreen(
             .background(color = MaterialTheme.colorScheme.onPrimary),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Spacer(modifier = modifier.padding(20.dp))
         Row(
             modifier = modifier
                 .fillMaxWidth(),
@@ -81,9 +81,12 @@ fun ProfileScreen(
                         .size(100.dp)
                         .padding(10.dp)
                 )
-                Text(text = stringResource(R.string.hello)+"$username!",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.hello)+" $username!",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary,
+                    maxLines = 1
+                )
             }
         }
 
@@ -96,14 +99,12 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(5.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Card(onClick = {/*personal information*/}, modifier = modifier
+            Card(onClick = {onPiClick()}, modifier = modifier
                 .padding(8.dp)
                 .height(50.dp),
                 colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onPrimary,
-            ), shape = MaterialTheme.shapes.small, border = BorderStroke(
-                color = Color.LightGray, width = 1.dp
-            )
+                containerColor = MaterialTheme.colorScheme.tertiary,
+            ), shape = MaterialTheme.shapes.small, elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
                 Row (
                     modifier
@@ -124,12 +125,12 @@ fun ProfileScreen(
                             .fillMaxWidth()
                             .weight(2f)){
 
-                        Text(text = stringResource(AppText.pi))
+                        Text(text = stringResource(AppText.pi), color = MaterialTheme.colorScheme.secondary)
                     }
                     Row(horizontalArrangement = Arrangement.End, modifier = modifier.weight(1f)) {
                         Icon(imageVector = Icons.Default.KeyboardArrowRight,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.secondary,
                             modifier = modifier
                                 .padding(8.dp)
                                 .size(30.dp))
@@ -180,10 +181,8 @@ fun ProfileScreen(
                 .padding(8.dp)
                 .height(50.dp),
                 colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onPrimary
-            ), shape = MaterialTheme.shapes.small, border = BorderStroke(
-                    color = Color.LightGray, width = 1.dp
-                ))
+                containerColor = MaterialTheme.colorScheme.tertiary
+            ), shape = MaterialTheme.shapes.small, elevation = CardDefaults.cardElevation(3.dp))
             {
                 Row (
                     modifier
@@ -204,12 +203,12 @@ fun ProfileScreen(
                             .fillMaxWidth()
                             .weight(1f)){
 
-                        Text(text = stringResource(AppText.signout))
+                        Text(text = stringResource(AppText.signout), color = MaterialTheme.colorScheme.secondary)
                     }
                     Row(horizontalArrangement = Arrangement.End, modifier = modifier.weight(1f)) {
                         Icon(imageVector = Icons.Default.KeyboardArrowRight,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = MaterialTheme.colorScheme.secondary,
                             modifier = modifier
                                 .padding(8.dp)
                                 .size(30.dp))
@@ -253,7 +252,8 @@ private fun ProfileScreenPreview() {
     EventGazeTheme {
             ProfileScreen(
             onSignOutClick = {},
-            username = ""
+            username = "",
+                onPiClick = {}
         )
     }
 

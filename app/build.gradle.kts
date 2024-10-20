@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
     id("com.google.devtools.ksp")
     id ("com.google.firebase.crashlytics")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
 }
 
 android {
@@ -90,13 +91,26 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.2.0")// or the latest version
 
     implementation( "androidx.compose.material:material:1.7.2")
-    implementation("androidx.compose.material:material-icons-extended:1.7.2")
+    implementation("androidx.compose.material:material-icons-extended:1.7.3")
     implementation(kotlin("script-runtime"))
 
-    implementation( "androidx.compose.ui:ui-graphics:1.7.2" )// Or the latest version
+    implementation( "androidx.compose.ui:ui-graphics:1.7.3" )// Or the latest version
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation( "androidx.palette:palette-ktx:1.0.0")
 
     implementation(libs.androidx.compose.animation)
+    implementation("androidx.core:core-splashscreen:1.0.1")
+    // Retrofit with Kotlin serialization Converter
+
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+// Retrofit with Scalar Converter
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // Kotlin serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
 }

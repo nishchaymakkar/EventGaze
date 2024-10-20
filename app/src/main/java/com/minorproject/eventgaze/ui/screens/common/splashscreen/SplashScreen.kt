@@ -1,4 +1,4 @@
-package com.minorproject.eventgaze.ui.screens.splashscreen
+package com.minorproject.eventgaze.ui.screens.common.splashscreen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.AnimationSpec
@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import kotlinx.coroutines.delay
-const val SPlASH_TIMEOUT = 1000L
+const val SPlASH_TIMEOUT = 500L
 @Composable
 fun SplashScreen(
     openAndPopUp: (String,String) -> Unit,
@@ -53,30 +54,7 @@ fun SplashScreenContent(modifier: Modifier = Modifier,onAppStart: ()-> Unit){
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ){
-        Spacer(modifier.height(40.dp).fillMaxWidth())
-        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-        Image(painter = painterResource(id = R.drawable.musicimage), contentDescription = null, 
-            modifier = modifier.size(width = 200.dp, height = 204.73.dp) )
-        }
-        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Image(painter = painterResource(id = R.drawable.codder), contentDescription = null,
-                modifier = modifier.size(width = 200.dp, height = 109.94.dp) )
-        }
-        Row(modifier = modifier.fillMaxWidth().padding(top = 20.dp, bottom = 20.dp)/*.animateContentSize(animationSpec = spring(
-            dampingRatio = 100f, stiffness = Spring.StiffnessMedium, visibilityThreshold = null)),*/,
-            horizontalArrangement = Arrangement.Center) {
-            Text(text = stringResource( R.string.app_name), style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.secondary,
-                modifier = modifier)
-        }
-        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-            Image(painter = painterResource(id = R.drawable.musiclistener), contentDescription = null,
-                modifier = modifier.size(width = 200.dp, height = 152.54.dp) )
-        }
-        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Image(painter = painterResource(id = R.drawable.athlete), contentDescription = null,modifier = modifier.size(width = 300.dp, height = 194.69.dp) )
-        }
-
+        Image(painter = painterResource(R.drawable.splashbackground), contentScale = ContentScale.Crop, contentDescription = null)
     }
 
     LaunchedEffect(true) {

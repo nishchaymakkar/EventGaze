@@ -34,5 +34,10 @@
     <string name="default_web_client_id">377688751073-lkmujf5kim8vepqnejra8qes3uv86t8b.apps.googleusercontent.com</string>
 
     <string name="sign_in_failed">Sign in Failed</string>
+    <string name="user">User</string>
+    <string name="publisher">Publisher</string>
+    <string name="orgname">Organization Name</string>
+    <string name="publishedevents">Published Events</string>
+    <string name="retry">Retry</string>
 
 </resources>

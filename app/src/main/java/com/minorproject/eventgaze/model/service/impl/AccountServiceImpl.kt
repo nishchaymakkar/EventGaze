@@ -46,6 +46,8 @@ class AccountServiceImpl @Inject constructor(
   override val hasUser: Boolean
     get() = auth.currentUser != null
 
+ // override val role: String = "publisher"
+
  override val current: Flow<User>
     get() = callbackFlow {
       val listener =
@@ -59,6 +61,8 @@ class AccountServiceImpl @Inject constructor(
   override suspend fun authenticate(email: String, password: String) {
     auth.signInWithEmailAndPassword(email, password).await()
   }
+
+
 
   override suspend fun sendRecoveryEmail(email: String) {
     auth.sendPasswordResetEmail(email).await()
@@ -104,6 +108,10 @@ class AccountServiceImpl @Inject constructor(
   }
     override fun signInWithGoogle(activity: Activity): Intent {
         val googleSignInClient = GoogleSignIn.getClient(activity, getGoogleSignInOptions(activity))
+
+        googleSignInClient.signOut().addOnCompleteListener{
+
+        }
         return googleSignInClient.signInIntent
     }
 

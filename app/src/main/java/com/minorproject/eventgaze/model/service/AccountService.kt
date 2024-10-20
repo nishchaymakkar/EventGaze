@@ -9,9 +9,8 @@ import kotlinx.coroutines.flow.Flow
 interface AccountService {
     val currentUserId: String
     val hasUser: Boolean
+   // val role: String
     val current: Flow<User>
-
-
     suspend fun authenticate(email: String, password: String)
     suspend fun sendRecoveryEmail(email: String)
 

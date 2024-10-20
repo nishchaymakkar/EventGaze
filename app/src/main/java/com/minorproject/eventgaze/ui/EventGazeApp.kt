@@ -5,16 +5,13 @@ package com.minorproject.eventgaze.ui
 import android.content.res.Resources
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.collection.intIntMapOf
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ScaffoldState
-import androidx.compose.material.Snackbar
-import androidx.compose.material.SnackbarHost
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -23,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,37 +29,58 @@ import com.minorproject.eventgaze.SignInScreen
 import com.minorproject.eventgaze.SignUpScreen
 import com.minorproject.eventgaze.SplashScreen
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
-import com.minorproject.eventgaze.ui.screens.loginscreen.SignInScreen
-import com.minorproject.eventgaze.ui.screens.signupscreen.SignUpScreen
-import com.minorproject.eventgaze.ui.screens.splashscreen.SplashScreen
+import com.minorproject.eventgaze.ui.screens.common.loginscreen.SignInScreen
+import com.minorproject.eventgaze.ui.screens.common.signupscreen.SignUpScreen
+import com.minorproject.eventgaze.ui.screens.common.splashscreen.SplashScreen
 import kotlinx.coroutines.CoroutineScope
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable
 import com.minorproject.eventgaze.CollegeEventScreen
 import com.minorproject.eventgaze.DetailScreen
-import com.minorproject.eventgaze.ui.screens.homescreen.MainScreen
+import com.minorproject.eventgaze.HomeScreenP
+import com.minorproject.eventgaze.ui.screens.user.homescreen.MainScreen
 import com.minorproject.eventgaze.MainScreen
+import com.minorproject.eventgaze.PiScreen
+import com.minorproject.eventgaze.ProfileScreenP
 import com.minorproject.eventgaze.model.data.Event
-import com.minorproject.eventgaze.ui.screens.colleges_screen.CollegeEventScreen
-import com.minorproject.eventgaze.ui.screens.detailScreen.DetailScreen
+import com.minorproject.eventgaze.ui.screens.publisher.homescreen.HomeScreen
+import com.minorproject.eventgaze.ui.screens.publisher.profilescreen.ProfileScreen
+import com.minorproject.eventgaze.ui.screens.user.colleges_screen.CollegeEventScreen
+import com.minorproject.eventgaze.ui.screens.user.detailScreen.DetailScreen
+import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
+import com.minorproject.eventgaze.ui.screens.user.homescreen.MainScreenViewModel
+import com.minorproject.eventgaze.ui.screens.user.profilescreen.PiScreen
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 
-
 @Composable
-fun rememberAppState(scaffoldState: ScaffoldState = rememberScaffoldState(),
-                     navController: NavHostController = rememberNavController(),
-                     snackbarManager: SnackbarManager = SnackbarManager,
-                     resources: Resources = resources(),
-                     coroutineScope: CoroutineScope = rememberCoroutineScope()
-) = remember(scaffoldState,
-    navController,snackbarManager,resources,coroutineScope
+fun rememberAppState(
+    snackbarHostState: SnackbarHostState = remember {SnackbarHostState()},
+    navController: NavHostController = rememberNavController(),
+    snackbarManager: SnackbarManager = SnackbarManager,
+    resources: Resources = resources(),
+    coroutineScope: CoroutineScope = rememberCoroutineScope()
+) = remember(
+    snackbarHostState,
+    navController,
+    snackbarManager,
+    resources,
+    coroutineScope
 ) {
-    EventGazeAppState(scaffoldState,navController,snackbarManager, resources,coroutineScope)
+    EventGazeAppState(
+        snackbarHostState,
+        navController,
+        snackbarManager,
+        resources,
+        coroutineScope
+    )
 }
+
 @Composable
 @ReadOnlyComposable
 fun resources(): Resources {
@@ -71,40 +88,7 @@ fun resources(): Resources {
     return LocalContext.current.resources
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
-@RequiresApi(Build.VERSION_CODES.S)
-@ExperimentalMaterialApi
-@ExperimentalMaterial3Api
-fun NavGraphBuilder.ecommerceGraph(appState: EventGazeAppState){
 
-    composable(SplashScreen){
-        SplashScreen(openAndPopUp = {route, popUp -> appState.navigateAndPopUp(route, popUp)})
-    }
-    composable(SignInScreen){
-        SignInScreen(openAndPopUp = {route,popUp -> appState.navigateAndPopUp(route, popUp)},
-            navigate = {route -> appState.navigate(route)})
-    }
-    composable(SignUpScreen){
-        SignUpScreen(navigate = {route -> appState.clearAndNavigate(route)},
-          popUp = {  appState.popUp()})
-    }
-    composable(MainScreen){
-        MainScreen(navigate = {route -> appState.clearAndNavigate(route)},
-            detailnavigate = {route -> appState.navigate(route)})
-    }
-    composable("$DetailScreen/{eventId}",
-        arguments = listOf(navArgument("eventId"){type = NavType.IntType})
-    ){backStackEntry ->
-        val eventId = backStackEntry.arguments?.getInt("eventId")
-        DetailScreen(eventId = eventId)
-    }
-    composable("$CollegeEventScreen/{collegeId}",
-        arguments = listOf(navArgument("collegeId"){type = NavType.IntType})
-    ) { backStackEntry ->
-        val collegeId = backStackEntry.arguments?.getInt("collegeId")
-        CollegeEventScreen(collegeId = collegeId, detailnavigate = {route -> appState.navigate(route)})
-    }
-}
 
 
 
@@ -114,34 +98,75 @@ fun NavGraphBuilder.ecommerceGraph(appState: EventGazeAppState){
 @ExperimentalMaterialApi
 @ExperimentalMaterial3Api
 @Composable
-fun EventGazeApp(modifier: Modifier = Modifier.verticalScroll(rememberScrollState())) {
+fun EventGazeApp() {
     EventGazeTheme {
 
-        Surface(color = androidx.compose.material.MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.primary) {
             val appState = rememberAppState()
+            val eventViewModel : MainScreenViewModel = viewModel()
 
-            androidx.compose.material.Scaffold(
+            Scaffold(
                 snackbarHost = {
                     SnackbarHost(
-                        hostState = it,
+                        hostState = appState.scaffoldHostState,
                         modifier = Modifier.padding(8.dp),
                         snackbar = { snackbarData ->
                             Snackbar(
                                 snackbarData,
-                                contentColor = androidx.compose.material.MaterialTheme.colors.onPrimary
+                                contentColor = MaterialTheme.colorScheme.secondary,
+                                containerColor = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     )
                 },
-                scaffoldState = appState.scaffoldState
             ) { innerPaddingModifier ->
+                val innerPadding = innerPaddingModifier
                 SharedTransitionScope {
                     NavHost(
                         navController = appState.navController,
                         startDestination = SplashScreen,
-                        modifier = Modifier.padding(innerPaddingModifier)
                     ) {
-                        ecommerceGraph(appState)
+                        composable(SplashScreen){
+                            SplashScreen(openAndPopUp = {route, popUp -> appState.navigateAndPopUp(route, popUp)})
+                        }
+                        composable(SignInScreen){
+                            SignInScreen(openAndPopUp = {route,popUp -> appState.navigateAndPopUp(route, popUp)},
+                                navigate = {route -> appState.navigate(route)})
+                        }
+                        composable(SignUpScreen){
+                            SignUpScreen(navigate = {route -> appState.clearAndNavigate(route)},
+                                popUp = {  appState.popUp()})
+                        }
+
+                        composable(MainScreen){
+                            MainScreen(navigate = {route -> appState.navigate(route)},
+                                animatedVisibilityScope = this@composable,
+                                eventUiState = eventViewModel.eventUiState,
+                                retryAction = eventViewModel::getEvents
+                            )
+
+                        }
+                        composable("$DetailScreen/{eventId}",
+                            arguments = listOf(navArgument("eventId"){type = NavType.IntType})
+                        ){backStackEntry ->
+                            val eventId = backStackEntry.arguments?.getInt("eventId")
+                        //    DetailScreen(eventId = eventId, eventUiState = eventViewModel.eventUiState, animatedVisibilityScope = this@composable)
+                        }
+                        composable("$CollegeEventScreen/{collegeId}",
+                            arguments = listOf(navArgument("collegeId"){type = NavType.IntType})
+                        ) { backStackEntry ->
+                            val collegeId = backStackEntry.arguments?.getInt("collegeId")
+                            CollegeEventScreen(collegeId = collegeId, detailnavigate = {route -> appState.navigate(route)}, animatedVisibilityScope = this)
+                        }
+                        composable(HomeScreenP) {
+                            HomeScreen(navigate = {route -> appState.navigate(route)})
+                        }
+                        composable(ProfileScreenP) {
+                            ProfileScreen()
+                        }
+                        composable(PiScreen) {
+                            PiScreen()
+                        }
                     }
                 }
             }
