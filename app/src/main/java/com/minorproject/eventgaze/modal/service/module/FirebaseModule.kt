@@ -14,11 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.minorproject.eventgaze.model.service.module
+package com.minorproject.eventgaze.modal.service.module
 
-import android.app.Activity
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore

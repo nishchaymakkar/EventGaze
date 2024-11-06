@@ -1,4 +1,4 @@
-package com.minorproject.eventgaze.model
+package com.minorproject.eventgaze.modal
 
 data class User(
     val id: String = "",

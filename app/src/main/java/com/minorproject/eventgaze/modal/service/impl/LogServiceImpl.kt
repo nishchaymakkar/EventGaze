@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.minorproject.eventgaze.model.service.impl
+package com.minorproject.eventgaze.modal.service.impl
 
 
-import com.minorproject.eventgaze.model.service.LogService
+import com.minorproject.eventgaze.modal.service.LogService
 import javax.inject.Inject
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 

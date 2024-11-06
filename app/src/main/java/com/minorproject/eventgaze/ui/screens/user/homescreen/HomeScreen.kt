@@ -1,35 +1,48 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class)
 
 package com.minorproject.eventgaze.ui.screens.user.homescreen
-
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,12 +53,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScrollModifierNode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,39 +71,55 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
-import androidx.palette.graphics.Palette
-import coil.ImageLoader
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import coil.request.SuccessResult
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.minorproject.eventgaze.R
-import com.minorproject.eventgaze.model.data.Category
-import com.minorproject.eventgaze.model.data.Event
-import com.minorproject.eventgaze.model.data.categories
+import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.Category
+import com.minorproject.eventgaze.modal.data.categories
+import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
+import com.minorproject.eventgaze.ui.theme.EventGazeTheme
+import com.minorproject.eventgaze.ui.theme.translucentBgColor
+import com.minorproject.eventgaze.ui.theme.translucentColor
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@Preview(showSystemUi = true, apiLevel = 34)
+@Preview(showSystemUi = true,)
 @ExperimentalMaterial3Api
 @Composable
 fun HomeScreenContentPreview() {
 
     // Mock values for testing the composable
-   val sampleEvent = Event(1,// Replace with your own drawable resource
-     2,
-       "Event Title",
-    "This is a sample description of the event. This is a sample description of the event." +
+   val sampleEvent = Event(eventId = "sljlskjdfflc",// Replace with your own drawable resource
+    categoryId =  2,
+    eventName =    "Event Title",
+    eventDescription = "This is a sample description of the event. This is a sample description of the event." +
             "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
+publisherId = 101,
+       eventTags = "sldlkd, odldl",
+       eventScope = "sdodldlc",
+       eventArt = "dlldfl"
+   )
 
-             "Publisher Name")
-    val position = 1
-
-    // Use AnimatedVisibility to provide the AnimatedVisibilityScope
-    AnimatedVisibility(
-        visible = true, // Set to true to make it visible in the preview
-    ) {
-       HomeScreenContent(event = listOf(sampleEvent) , onItemClick= { sampleEvent, _->
-           sampleEvent
-       } , animatedVisibilityScope = this )
-    }
+   //  Use AnimatedVisibility to provide the AnimatedVisibilityScope
+   EventGazeTheme {
+       AnimatedVisibility(
+           visible = true, // Set to true to make it visible in the preview
+       ) {
+           HomeScreenContent(event = listOf(sampleEvent), onItemClick = { sampleEvent->
+               sampleEvent
+           }, animatedVisibilityScope = this,
+               onShareClick = {},
+               refresh = {})
+       }
+   }
 }
 
 
@@ -94,121 +127,139 @@ fun HomeScreenContentPreview() {
 fun HomeScreenContent(
     event: List<Event>,
     modifier: Modifier = Modifier,
-    onItemClick: (Event, Int) -> Unit,
-   animatedVisibilityScope: AnimatedVisibilityScope
+    onItemClick: (String?) -> Unit,
+    onShareClick: (Event) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    refresh: ()-> Unit
 ) {
+    var isRefreshing by remember { mutableStateOf(false) }
+    val hazeState = remember { HazeState() }
 
+    var selectedCategoryId by remember { mutableIntStateOf(0) }
 
-    var selectedCategoryId by remember { mutableIntStateOf(1) }
-   LazyColumn(modifier) {
-
-
-    item {
-        Row(
-            modifier
-                .fillMaxWidth()
-                .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(text = stringResource(R.string.discover), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.secondary)
+    val scope = rememberCoroutineScope()
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            scope.launch {
+                isRefreshing = true
+                delay(3000)
+                refresh()
+                isRefreshing = false
+            }
         }
-    }
+    ) {
+        LazyColumn(modifier.haze(
+        hazeState,
+        backgroundColor = MaterialTheme.colorScheme.background,
+        tint = Color.Black.copy(alpha = .2f),
+        blurRadius = 30.dp,
+    ).background(//color = MaterialTheme.colorScheme.onPrimary
+        brush = Brush.linearGradient(colors = listOf( MaterialTheme.colorScheme.primary.copy(.2f),
+           MaterialTheme.colorScheme.onPrimary.copy(.2f),
+            MaterialTheme.colorScheme.primary.copy(.2f)),
+             start = Offset(x=0f,y=100f), end = Offset(x = 800f, y = 1500f))
+    )
+        ) {
+
+
+        item {
+            Row(
+                modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, start = 16.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(text = stringResource(R.string.discover), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.secondary)
+            }
+        }
 
 
 
-item {
-    CategoryRow(categories = categories, selectedCategoryId = selectedCategoryId, onCategorySelected = {selectedCategoryId = it})
-
-}
-       item {
-           Spacer(modifier.height(20.dp))
-       }
-
-
-            EventList(events = if (selectedCategoryId ==1 )event else event.filter { it.categoryid == selectedCategoryId }, selectedCategoryId = selectedCategoryId,modifier = Modifier, onItemClick = onItemClick , animatedVisibilityScope = animatedVisibilityScope )
-
-
+        item {
+            CategoryRow(categories = categories, selectedCategoryId = selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.hazeChild(hazeState))
 
         }
+        item {
+            Spacer(modifier.height(20.dp))
+        }
+
+
+        EventList(events = if (selectedCategoryId ==0 )event else event.filter { it.categoryId == selectedCategoryId },
+
+            modifier = Modifier, onItemClick = onItemClick ,
+            onShareClick = onShareClick,
+            animatedVisibilityScope = animatedVisibilityScope )
+
+
+
+    }}
+
+
 }
 
 @Composable
 fun CategoryRow(
     categories: List<Category>,
     selectedCategoryId: Int,
+    modifier: Modifier = Modifier,
     onCategorySelected: (Int) -> Unit
 ){
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(start=16.dp,end= 16.dp)) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(start=16.dp,end= 16.dp)) {
         items(categories){category->
             val isSelected = selectedCategoryId == category.id
-
-        Column(
-            modifier = Modifier,
-            verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+        Button(onClick = {onCategorySelected(category.id)},
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(.2f)
+            ),
+            border = BorderStroke(width = .5.dp, color = if (isSelected)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(.2f))
         ) {
-            Card(
-                shape = CircleShape,
-                modifier = Modifier.size(55.dp).clickable(onClick = {onCategorySelected(category.id)}),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary
-                ),
-                elevation = CardDefaults.cardElevation(2.dp)
-                // border = BorderStroke(width = 1.dp, color = if (isSelected)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary)
-            ) {
-                Box(modifier = Modifier.fillMaxSize()){
-                Icon(imageVector = category.icon,contentDescription = null,
-                    modifier = Modifier.align(Alignment.Center))}
-            }
-            Spacer(modifier = Modifier.height(5.dp))
-            Text(text = category.name, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, overflow = TextOverflow.Ellipsis,
-                color = if ( isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-            )
+            Text(text = category.name,Modifier.padding(2.dp), color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary)
         }
+
         }
     }
 }
 
 fun LazyListScope.EventList(
-    events: List<Event>, selectedCategoryId: Int,
-    modifier: Modifier,onItemClick: (Event,Int)-> Unit,
+    events: List<Event>,
+    onShareClick: (Event) -> Unit,
+    modifier: Modifier,onItemClick: (String?)-> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope
 ){
-//    val filteredEvents = if (selectedCategoryId == 1 ) {
-//        events
-//    } else {
-//        events.filter { it.categoryid == selectedCategoryId }
-//    }
-  //  LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier) {
         itemsIndexed(events){index,event->
-
             ItemCard(
-                id = event.id,
-                //image = event.image,
-                title = event.title,
-                des = event.des, modifier = modifier.clickable { onItemClick(event,index) },
-               // profileimg = event.profileimg,
-                publishername = event.publishername,
-                animatedVisibilityScope = animatedVisibilityScope
-            )
+                 id = event.eventId,
+                 image = event.eventArt,
+                 title = event.eventName,
+                 des = event.eventDescription, modifier = modifier,
+                 // profileimg = event.profileimg,
+                 publishername = event.eventScope,
+                 animatedVisibilityScope = animatedVisibilityScope,
+                 onShareClick = {onShareClick(event)},
+                 onItemClick = {onItemClick(event.eventId)}
+             )
 
-        //}
     }
 }
 
 
 @Composable
 fun ItemCard(
-    id: Int,
-   // image: Int,
+    id: String?,
+    image: String?,
     title: String,
     des: String,
     modifier: Modifier,
+    onShareClick: () -> Unit,
+    onItemClick:()-> Unit,
    // profileimg: Int,
     publishername: String,
     animatedVisibilityScope: AnimatedVisibilityScope
 
 ) {
-    var backgroundColor by remember { mutableStateOf(Color.Transparent) }
-    val context = LocalContext.current
+
+    var isSaveClicked by remember { mutableStateOf(false) }
+//    var backgroundColor by remember { mutableStateOf(Color.Transparent) }
+//    val context = LocalContext.current
 
  //   LaunchedEffect(image) {
         // Load image as a Bitmap
@@ -238,75 +289,133 @@ fun ItemCard(
 //        start = Offset(1000f, 800f),
 //        end = Offset(1000f, 300f) // Adjust as necessary for the gradient effect
 //    )
-
     SharedTransitionLayout {
-        Card(modifier = modifier
-            .height(360.dp)
-            .fillMaxWidth()
-            .padding(start = 16.dp, top=8.dp, bottom = 8.dp, end = 16.dp),
-            //colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
-            elevation = CardDefaults.elevatedCardElevation(2.dp),
-
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondary.copy(.2f)
+            ),
+            border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(.2f)),
+            elevation = CardDefaults.elevatedCardElevation(2.dp)
         ) {
-            Column (
-                modifier.fillMaxSize().background(
-                    
-                    MaterialTheme.colorScheme.tertiary
-                ), verticalArrangement = Arrangement.SpaceBetween
-            ){
-                Image(painter = painterResource(R.drawable.img_2), contentDescription = null,modifier = Modifier.sharedElement(
-                    state = rememberSharedContentState(key = "event_img"),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    boundsTransform = { initial, target ->
-                        tween(durationMillis = 1000)
-                    },
-                )
-                    .fillMaxWidth().align(Alignment.Start)
-                    .height(200.dp), contentScale = ContentScale.Crop )
-                Row(
+            Column(
+                modifier = Modifier
+                    //.background(MaterialTheme.colorScheme.secondary.copy(.1f))
+
+            ) {
+                Box(modifier) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(image)
+                            .crossfade(true)
+                            .build(),
+                        error = painterResource(R.drawable.ic_connection_error),
+                        placeholder = painterResource(R.drawable.loading_img),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(3 / 2f)
+                            .clickable { onItemClick() },
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .background(Color.Transparent)
 
                 ) {
-                    Text(text = title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(8.dp).sharedElement(
-                            state = rememberSharedContentState(key = "event_${title}"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { initial, target ->
-                                tween(durationMillis = 1000)
-                            },
-                        ))
-                }
-                Row {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Text(
+                            text = "24.11.2024",
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(start = 4.dp),
+                            maxLines = 1
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Text(
                         text = des,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(8.dp).sharedElement(
-                            state = rememberSharedContentState(key = "event_${des}"),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            boundsTransform = { initial, target ->
-                                tween(durationMillis = 1000)
-                            },
-                        ),
-                        color = MaterialTheme.colorScheme.secondary
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
 
-                Row(
-                    horizontalArrangement = Arrangement.Start, modifier = modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.img),
-                        contentDescription = null,
-                        modifier = modifier,
-                        contentScale = ContentScale.Fit
-                    )
-                    Text(text = publishername,modifier = modifier.padding(start = 16.dp, end = 16.dp)
-                        , color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.img),
+                                contentDescription = null,
+                                modifier = Modifier.size(30.dp),
+                                contentScale = ContentScale.Crop
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = publishername,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        Row {
+                            IconButton(onClick = {isSaveClicked = !isSaveClicked}) {
+                                Icon(
+                                    imageVector = if (isSaveClicked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                    contentDescription = "Save",
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+
+                            IconButton(onClick = onShareClick) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Share",
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-
 
 }

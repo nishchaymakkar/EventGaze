@@ -5,8 +5,8 @@ import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.SignInScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.minorproject.eventgaze.SplashScreen
-import com.minorproject.eventgaze.model.service.AccountService
-import com.minorproject.eventgaze.model.service.LogService
+import com.minorproject.eventgaze.modal.service.AccountService
+import com.minorproject.eventgaze.modal.service.LogService
 import com.minorproject.eventgaze.ui.EventGazeViewModel
 import javax.inject.Inject
 
@@ -25,7 +25,7 @@ class SplashViewModel @Inject constructor(
 //             SplashScreen)}
 //         else -> openAndPopUp(SignInScreen, SplashScreen)
 //     }
-     if (accountService.hasUser) openAndPopUp(MainScreen, SplashScreen)
+     if (accountService.hasUser) openAndPopUp(HomeScreenP, SplashScreen)
      else  openAndPopUp(SignInScreen, SplashScreen)
 
  }

@@ -1,9 +1,9 @@
-package com.minorproject.eventgaze.model.service
+package com.minorproject.eventgaze.modal.service
 
 import android.app.Activity
 import android.content.Intent
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.minorproject.eventgaze.model.User
+import com.minorproject.eventgaze.modal.User
 import kotlinx.coroutines.flow.Flow
 
 interface AccountService {

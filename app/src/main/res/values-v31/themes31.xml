@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources >
-
-
-    <!-- res/values/themes.xml -->
-    <style name="Theme.EventGaze.Splash" parent="Theme.SplashScreen">
+<resources>
+    <style name="Theme.EventGaze.Splash" parent="Theme.Material3.Dark.NoActionBar">
         <item name="windowSplashScreenBackground">@color/black</item>
         <!-- Set an image or logo for the splash screen -->
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
@@ -12,6 +9,4 @@
     </style>
 
     <style name="Theme.EventGaze" parent="android:Theme.Material.NoActionBar"/>
-
-
 </resources>

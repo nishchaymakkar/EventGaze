@@ -19,7 +19,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
+        multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -36,11 +36,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -73,6 +74,8 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.palette.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,14 +90,14 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     ksp ("com.google.dagger:hilt-compiler:2.48")
 
-    implementation("com.google.firebase:firebase-crashlytics:19.1.0")
+    implementation("com.google.firebase:firebase-crashlytics:19.2.1")
     implementation("com.google.android.gms:play-services-auth:21.2.0")// or the latest version
 
-    implementation( "androidx.compose.material:material:1.7.2")
-    implementation("androidx.compose.material:material-icons-extended:1.7.3")
+    implementation( "androidx.compose.material:material:1.7.4")
+    implementation("androidx.compose.material:material-icons-extended:1.7.4")
     implementation(kotlin("script-runtime"))
 
-    implementation( "androidx.compose.ui:ui-graphics:1.7.3" )// Or the latest version
+    implementation( "androidx.compose.ui:ui-graphics:1.7.4" )// Or the latest version
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation( "androidx.palette:palette-ktx:1.0.0")
 
@@ -112,5 +115,16 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     // Kotlin serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+
+    implementation("org.mongodb:mongodb-driver-sync:4.8.0")
+    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:2.0.3")
+    implementation("com.google.accompanist:accompanist-permissions:0.30.0")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.0")
+
+        // For Play Integrity (Recommended)
+        implementation ("com.google.firebase:firebase-appcheck-playintegrity:17.0.1")
+    implementation("dev.chrisbanes.haze:haze-jetpack-compose:0.4.1")
+    implementation("com.exyte:animated-navigation-bar:1.0.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
 
 }

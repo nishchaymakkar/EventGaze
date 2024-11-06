@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -60,9 +61,9 @@ fun ProfileScreen(
 ){
     Column (
         modifier = modifier
-            .padding(10.dp)
-            .background(color = MaterialTheme.colorScheme.onPrimary),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize().padding(top = 40.dp)
+          //  .background(color = MaterialTheme.colorScheme.onPrimary),
+        ,horizontalAlignment = Alignment.CenterHorizontally
     ){
         Row(
             modifier = modifier
@@ -103,7 +104,7 @@ fun ProfileScreen(
                 .padding(8.dp)
                 .height(50.dp),
                 colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiary,
+                containerColor = MaterialTheme.colorScheme.onPrimary,
             ), shape = MaterialTheme.shapes.small, elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
                 Row (
@@ -181,7 +182,7 @@ fun ProfileScreen(
                 .padding(8.dp)
                 .height(50.dp),
                 colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiary
+                containerColor = MaterialTheme.colorScheme.onPrimary
             ), shape = MaterialTheme.shapes.small, elevation = CardDefaults.cardElevation(3.dp))
             {
                 Row (

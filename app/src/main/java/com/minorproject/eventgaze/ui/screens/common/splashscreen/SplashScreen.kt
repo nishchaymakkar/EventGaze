@@ -58,7 +58,7 @@ fun SplashScreenContent(modifier: Modifier = Modifier,onAppStart: ()-> Unit){
     }
 
     LaunchedEffect(true) {
-        delay(SPlASH_TIMEOUT)
+        //delay(SPlASH_TIMEOUT)
         onAppStart()
     }
 }

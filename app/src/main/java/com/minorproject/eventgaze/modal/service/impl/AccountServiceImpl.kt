@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.minorproject.eventgaze.model.service.impl
+package com.minorproject.eventgaze.modal.service.impl
 
 import android.app.Activity
 import android.content.Context
@@ -22,14 +22,13 @@ import android.content.Intent
 import androidx.compose.ui.util.trace
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.minorproject.eventgaze.R
-import com.minorproject.eventgaze.model.User
-import com.minorproject.eventgaze.model.service.AccountService
+import com.minorproject.eventgaze.modal.User
+import com.minorproject.eventgaze.modal.service.AccountService
 import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

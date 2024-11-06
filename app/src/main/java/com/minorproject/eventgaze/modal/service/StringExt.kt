@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.minorproject.eventgaze.model.service
+package com.minorproject.eventgaze.modal.service
 
 import android.util.Patterns
 import java.util.regex.Pattern

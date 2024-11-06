@@ -18,7 +18,7 @@ package com.minorproject.eventgaze.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.minorproject.eventgaze.model.service.LogService
+import com.minorproject.eventgaze.modal.service.LogService
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 import com.minorproject.eventgaze.ui.common.components.SnackbarMessage.Companion.toSnackbarMessage
 import kotlinx.coroutines.CoroutineExceptionHandler

@@ -3,17 +3,14 @@ package com.minorproject.eventgaze.ui.screens.common.loginscreen
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.app.ActivityCompat.startActivityForResult
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.minorproject.eventgaze.HomeScreenP
 import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.SignInScreen
 import com.minorproject.eventgaze.R.string as AppText
 import com.minorproject.eventgaze.SignUpScreen
-import com.minorproject.eventgaze.model.service.AccountService
-import com.minorproject.eventgaze.model.service.LogService
-import com.minorproject.eventgaze.model.service.isValidEmail
-import com.minorproject.eventgaze.model.service.isValidPassword
+import com.minorproject.eventgaze.modal.service.AccountService
+import com.minorproject.eventgaze.modal.service.LogService
+import com.minorproject.eventgaze.modal.service.isValidEmail
 import com.minorproject.eventgaze.ui.EventGazeViewModel
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -1,4 +1,4 @@
-package com.minorproject.eventgaze.model.data
+package com.minorproject.eventgaze.modal.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Category
@@ -12,13 +12,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 data class Category(
     val id: Int,
     val name: String,
-    val icon: ImageVector
+   // val icon: ImageVector
 )
 val categories = listOf(
-    Category(1, "All", Icons.Default.Category),
-    Category(2, "Sports", Icons.Default.SportsKabaddi),
-    Category(3, "Music", Icons.Default.MusicNote),
-    Category(4, "Debates", Icons.Default.People),
-    Category(5, "Technologies", Icons.Default.Computer),
-    Category(6,"Cooking", Icons.Default.Kitchen)
+    Category(0, "All"),
+    Category(1, "Sports"),
+    Category(2, "Music"),
+    Category(3, "Debates"),
+    Category(4, "Technologies"),
+    Category(5,"Cooking"),
+    Category(6,"Arts")
 )

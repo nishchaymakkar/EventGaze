@@ -10,6 +10,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.minorproject.eventgaze.ui.EventGazeApp
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @ExperimentalSharedTransitionApi
 @ExperimentalMaterialApi
+@ExperimentalPermissionsApi
 @ExperimentalMaterial3Api
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

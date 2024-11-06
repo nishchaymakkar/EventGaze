@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 
 package com.minorproject.eventgaze.ui
 
@@ -9,7 +9,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ScaffoldState
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.gson.Gson
+import com.minorproject.eventgaze.AddEventScreen
 import com.minorproject.eventgaze.CollegeEventScreen
 import com.minorproject.eventgaze.DetailScreen
 import com.minorproject.eventgaze.HomeScreenP
@@ -48,12 +50,12 @@ import com.minorproject.eventgaze.ui.screens.user.homescreen.MainScreen
 import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.PiScreen
 import com.minorproject.eventgaze.ProfileScreenP
-import com.minorproject.eventgaze.model.data.Event
+import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.ui.screens.publisher.addeventscreen.AddEventScreen
 import com.minorproject.eventgaze.ui.screens.publisher.homescreen.HomeScreen
 import com.minorproject.eventgaze.ui.screens.publisher.profilescreen.ProfileScreen
 import com.minorproject.eventgaze.ui.screens.user.colleges_screen.CollegeEventScreen
 import com.minorproject.eventgaze.ui.screens.user.detailScreen.DetailScreen
-import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
 import com.minorproject.eventgaze.ui.screens.user.homescreen.MainScreenViewModel
 import com.minorproject.eventgaze.ui.screens.user.profilescreen.PiScreen
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
@@ -93,6 +95,7 @@ fun resources(): Resources {
 
 
 
+@Suppress("UNUSED_VARIABLE")
 @ExperimentalSharedTransitionApi
 @RequiresApi(Build.VERSION_CODES.S)
 @ExperimentalMaterialApi
@@ -101,10 +104,8 @@ fun resources(): Resources {
 fun EventGazeApp() {
     EventGazeTheme {
 
-        Surface(color = MaterialTheme.colorScheme.primary) {
             val appState = rememberAppState()
             val eventViewModel : MainScreenViewModel = viewModel()
-
             Scaffold(
                 snackbarHost = {
                     SnackbarHost(
@@ -113,8 +114,8 @@ fun EventGazeApp() {
                         snackbar = { snackbarData ->
                             Snackbar(
                                 snackbarData,
-                                contentColor = MaterialTheme.colorScheme.secondary,
-                                containerColor = MaterialTheme.colorScheme.onPrimary
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = MaterialTheme.colorScheme.secondary
                             )
                         }
                     )
@@ -140,6 +141,7 @@ fun EventGazeApp() {
 
                         composable(MainScreen){
                             MainScreen(navigate = {route -> appState.navigate(route)},
+                                restartApp = {route -> appState.clearAndNavigate(route)},
                                 animatedVisibilityScope = this@composable,
                                 eventUiState = eventViewModel.eventUiState,
                                 retryAction = eventViewModel::getEvents
@@ -147,10 +149,24 @@ fun EventGazeApp() {
 
                         }
                         composable("$DetailScreen/{eventId}",
-                            arguments = listOf(navArgument("eventId"){type = NavType.IntType})
-                        ){backStackEntry ->
-                            val eventId = backStackEntry.arguments?.getInt("eventId")
-                        //    DetailScreen(eventId = eventId, eventUiState = eventViewModel.eventUiState, animatedVisibilityScope = this@composable)
+                            arguments = listOf(navArgument("eventId"){type = NavType.StringType})
+                            //arguments = listOf(navArgument("eventJson"){type = NavType.StringType})
+                        )
+                        {backStackEntry ->
+                            val eventId = backStackEntry.arguments?.getString("eventId")
+//                            val eventJson = backStackEntry.arguments?.getString("eventJson")
+//                            val event = eventJson?.let { json ->
+//                                java.net.URLDecoder.decode(json,"UTF-8")
+//                                    .let { decodeJson -> Gson().fromJson(decodeJson,Event::class.java) }
+//                            }
+                            if (eventId != null) {
+                                DetailScreen(
+                                    animatedVisibilityScope = this@composable,
+                                   eventId = eventId,
+                                   // event = event,
+                                    popUp = {appState.popUp()}
+                                )
+                            }
                         }
                         composable("$CollegeEventScreen/{collegeId}",
                             arguments = listOf(navArgument("collegeId"){type = NavType.IntType})
@@ -159,17 +175,20 @@ fun EventGazeApp() {
                             CollegeEventScreen(collegeId = collegeId, detailnavigate = {route -> appState.navigate(route)}, animatedVisibilityScope = this)
                         }
                         composable(HomeScreenP) {
-                            HomeScreen(navigate = {route -> appState.navigate(route)})
+                            HomeScreen(navigate = {route -> appState.navigate(route)},
+                                eventUiState = eventViewModel.eventUiState, retryAction = eventViewModel::getEvents)
                         }
                         composable(ProfileScreenP) {
                             ProfileScreen()
                         }
                         composable(PiScreen) {
-                            PiScreen()
+                            PiScreen(popUp = { appState.popUp()})
+                        }
+                        composable(AddEventScreen){
+                            AddEventScreen(popUp = {appState.popUp()}, retry = eventViewModel::getEvents)
                         }
                     }
                 }
             }
         }
     }
-}
