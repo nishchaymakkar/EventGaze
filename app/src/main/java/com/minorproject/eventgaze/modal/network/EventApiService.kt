@@ -18,7 +18,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 
-private const val BASE_URL = "http://192.168.1.4:8080"
+private const val BASE_URL = "http://192.168.1.39:8080"
 private val gson = GsonBuilder()
     .setLenient()
     .create()
@@ -58,7 +58,7 @@ interface EventApiService {
         @Part("eventDate") eventDate: RequestBody,
         @Part("eventScope") eventScope: RequestBody,
         @Part("eventTags") eventTags: RequestBody,
-        @Part file: MultipartBody.Part
+        @Part eventArt: MultipartBody.Part
     ): Response<String>
 
 }

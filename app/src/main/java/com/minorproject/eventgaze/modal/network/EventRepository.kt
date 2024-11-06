@@ -13,6 +13,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.IOException
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,7 +53,10 @@ class EventRepository @Inject constructor() {
             )
             fileInputStream.close() // Closing after reading
 
-            val filePart = MultipartBody.Part.createFormData("file", "image.jpg", requestFile)
+            val uniqueFileName = UUID.randomUUID().toString() + ".jpg"
+
+
+            val filePart = MultipartBody.Part.createFormData("eventArt", uniqueFileName, requestFile)
 
 
             val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)

@@ -345,7 +345,7 @@ fun PublishButton(text: String, modifier: Modifier, action: () -> Unit) {
 fun ImagePickerWithPermissions() {
     // Permission state for reading external storage
     val storagePermissionState = rememberPermissionState(
-        permission = android.Manifest.permission.READ_EXTERNAL_STORAGE
+        permission = android.Manifest.permission.READ_MEDIA_IMAGES
     )
 
     // Check permission status
