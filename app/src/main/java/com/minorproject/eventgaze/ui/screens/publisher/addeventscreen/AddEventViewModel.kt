@@ -2,17 +2,27 @@ package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.network.HttpException
 import com.minorproject.eventgaze.modal.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.modal.network.EventRepository
+import com.minorproject.eventgaze.ui.screens.user.homescreen.CategoryUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -20,6 +30,9 @@ import javax.inject.Inject
 class AddEventViewModel @Inject constructor(
     private val eventRepository: EventRepository
 ):ViewModel() {
+    private val _categoryOptions = MutableStateFlow<List<EventCategory>>(emptyList())
+    val categoryOptions: StateFlow<List<EventCategory>> = _categoryOptions
+
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> get() = _isLoading
@@ -28,6 +41,7 @@ class AddEventViewModel @Inject constructor(
     val publishEventResult: LiveData<Result<Unit>> = _publishEventResult
     var uiState = mutableStateOf(AddEventUiState())
         private set
+    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
 
     private val eventName
         get() = uiState.value.eventName
@@ -109,5 +123,43 @@ class AddEventViewModel @Inject constructor(
         }
     }
 
-}
+    fun getCategory() {
+        viewModelScope.launch {
+
+            withContext(Dispatchers.IO){
+                categoryUiState = CategoryUiState.Loading
+                val result = eventRepository.fetchCategory()
+                if (result.isSuccess) {
+                    _categoryOptions.value = result.getOrNull().orEmpty().filter { it.eventCategoryId != 0L }
+                } else {
+                    // Handle the error case, e.g., log the error or show a message
+                    result.exceptionOrNull()?.printStackTrace()
+                }
+            }
+
+//            categoryUiState = when {
+//                    result.isSuccess -> {
+//                        Log.d("MainScreenVieModel","Category fetched successfully: ${result.getOrThrow().size}")
+//                        CategoryUiState.Success(result.getOrThrow())
+//                    }
+//                    result.isFailure -> {
+//                        val exception = result.exceptionOrNull()
+//                        Log.e("MainScreenViewModel", "Error: ${exception?.localizedMessage}")
+//                        when (exception) {
+//                            is IOException -> CategoryUiState.Error("Network error occurred. Please check your connection.")
+//                            is HttpException -> CategoryUiState.Error("Server error occurred. Please try again later.")
+//                            else -> CategoryUiState.Error("An unknown error occurred. Please try again.")
+//                        }
+//
+//                    }
+//                    else -> CategoryUiState.Error("Unexpected Error")
+//                }
+            }
+
+        }
+
+
+    }
+
+
 

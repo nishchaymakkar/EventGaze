@@ -179,7 +179,7 @@ fun EventGazeApp() {
                         }
                         composable(HomeScreenP) {
                             HomeScreen(navigate = {route -> appState.navigate(route)},
-                                eventUiState = eventViewModel.eventUiState, retryAction = eventViewModel::getEvents)
+                                eventUiState = eventViewModel.eventUiState, retryAction = eventViewModel::getEvents, animatedVisibilityScope = this@composable)
                         }
                         composable(ProfileScreenP) {
                             ProfileScreen()

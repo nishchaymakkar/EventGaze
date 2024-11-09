@@ -16,6 +16,7 @@ import okhttp3.RequestBody
 import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -77,7 +78,8 @@ class EventRepository @Inject constructor() {
             val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
             val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
             val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.eventCategoryId.toString())
-            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().toString().format("yyyy-MM-dd"))
+            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
+                DateTimeFormatter.ofPattern("dd-MM-yyyy")))
             val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventScope)
             val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
 
@@ -87,9 +89,9 @@ class EventRepository @Inject constructor() {
 
 //
            return if (response.isSuccessful) {
-                val resultBody = response.body() ?: "No response message returned"
-                Log.d("API Success", "Server response: $resultBody")
-                Result.success(resultBody)
+
+                Log.d("API Success", "event created successfully")
+                Result.success("isSuccessful")
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e("API Response Error", "Error response: $errorBody")

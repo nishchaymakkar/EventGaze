@@ -69,6 +69,6 @@ interface EventApiService {
         @Part("eventScope") eventScope: RequestBody,
         @Part("eventTags") eventTags: RequestBody,
         @Part eventArt: MultipartBody.Part
-    ): Response<String>
+    ): Response<Void>
 
 }

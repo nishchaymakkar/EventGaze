@@ -57,6 +57,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -109,13 +110,15 @@ fun AddEventScreen(
     viewModel: AddEventViewModel = hiltViewModel()
 ) {
     val addEventUiState = viewModel.uiState
-    val categoryOptions = listOf(EventCategory(1L,"Technologies"))
+    val categoryOptions by viewModel.categoryOptions.collectAsState()
     val scopeOptions = listOf("Local","National","Global")
 
     val isUploading by viewModel.isLoading
     val context = LocalContext.current
     val publishEventResult by viewModel.publishEventResult.observeAsState()
-
+    LaunchedEffect(Unit) {
+        viewModel.getCategory()
+    }
     LaunchedEffect(publishEventResult) {
       publishEventResult?.let  {
             if (it.isSuccess) {
@@ -289,7 +292,7 @@ fun DropdownCategoryTextField(
     onValueSelected: (EventCategory) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf("") }
+    var selectedOption by remember { mutableStateOf("Select An Category") }
     val focusManager = LocalFocusManager.current
     var imeAction by remember { mutableStateOf(false) }
     // Outer Box to handle the ExposedDropdownMenu logic
