@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "377688751073",
+    "project_id": "eventgaze-3e24c",
+    "storage_bucket": "eventgaze-3e24c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377688751073:android:57f2f59b92b50dafe9b0a0",
+        "android_client_info": {
+          "package_name": "com.minorproject.eventgaze"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "377688751073-71b8fmpl7sm14k7kva57nppbvhhtlage.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.minorproject.eventgaze",
+            "certificate_hash": "0c42e02f6ea76838ec7e5d2baa06912f02075427"
+          }
+        },
+        {
+          "client_id": "377688751073-m2l79a1gktgdmemd2a152bopc45qnepp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.minorproject.eventgaze",
+            "certificate_hash": "63464b94cc7e21cf5d827f983bc472f3a157cb99"
+          }
+        },
+        {
+          "client_id": "377688751073-lkmujf5kim8vepqnejra8qes3uv86t8b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCexQXldUZvnU0KlPHZpHuWQVn_W0jFKyk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "377688751073-lkmujf5kim8vepqnejra8qes3uv86t8b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

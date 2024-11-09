@@ -6,7 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,12 +14,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,14 +24,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.DateRange
@@ -51,18 +47,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScrollModifierNode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -71,20 +66,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
+import androidx.palette.graphics.Palette
+import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.modal.Event
-import com.minorproject.eventgaze.modal.data.Category
-import com.minorproject.eventgaze.modal.data.categories
-import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
+import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
-import com.minorproject.eventgaze.ui.theme.translucentBgColor
-import com.minorproject.eventgaze.ui.theme.translucentColor
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
@@ -97,27 +90,29 @@ import kotlinx.coroutines.launch
 fun HomeScreenContentPreview() {
 
     // Mock values for testing the composable
-   val sampleEvent = Event(eventId = "sljlskjdfflc",// Replace with your own drawable resource
-    categoryId =  2,
-    eventName =    "Event Title",
-    eventDescription = "This is a sample description of the event. This is a sample description of the event." +
-            "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
-publisherId = 101,
-       eventTags = "sldlkd, odldl",
-       eventScope = "sdodldlc",
-       eventArt = "dlldfl"
-   )
+//   val sampleEvent = Event(eventId = "sljlskjdfflc",// Replace with your own drawable resource
+//    eventCategory =  2L,
+//    eventName =    "Event Title",
+//    eventDescription = "This is a sample description of the event. This is a sample description of the event." +
+//            "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
+//publisherId = 101,
+//       eventTags = "sldlkd, odldl",
+//       eventScope = "sdodldlc",
+//       eventArt = "dlldfl"
+//   )
 
    //  Use AnimatedVisibility to provide the AnimatedVisibilityScope
    EventGazeTheme {
        AnimatedVisibility(
            visible = true, // Set to true to make it visible in the preview
        ) {
-           HomeScreenContent(event = listOf(sampleEvent), onItemClick = { sampleEvent->
-               sampleEvent
-           }, animatedVisibilityScope = this,
-               onShareClick = {},
-               refresh = {})
+//           HomeScreenContent(event = listOf(sampleEvent), onItemClick = { sampleEvent->
+//               sampleEvent
+//           }, animatedVisibilityScope = this,
+//               onShareClick = {},
+//               refresh = {},
+//               category = listOf(Category(1L, "Sports"))
+//           )
        }
    }
 }
@@ -126,16 +121,18 @@ publisherId = 101,
 @Composable
 fun HomeScreenContent(
     event: List<Event>,
+    category: List<EventCategory>,
     modifier: Modifier = Modifier,
     onItemClick: (String?) -> Unit,
     onShareClick: (Event) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     refresh: ()-> Unit
+
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     val hazeState = remember { HazeState() }
 
-    var selectedCategoryId by remember { mutableIntStateOf(0) }
+    var selectedCategoryId by remember { mutableLongStateOf(0L) }
 
     val scope = rememberCoroutineScope()
     SwipeRefresh(
@@ -149,17 +146,19 @@ fun HomeScreenContent(
             }
         }
     ) {
+
         LazyColumn(modifier.haze(
         hazeState,
         backgroundColor = MaterialTheme.colorScheme.background,
         tint = Color.Black.copy(alpha = .2f),
         blurRadius = 30.dp,
-    ).background(//color = MaterialTheme.colorScheme.onPrimary
-        brush = Brush.linearGradient(colors = listOf( MaterialTheme.colorScheme.primary.copy(.2f),
-           MaterialTheme.colorScheme.onPrimary.copy(.2f),
-            MaterialTheme.colorScheme.primary.copy(.2f)),
-             start = Offset(x=0f,y=100f), end = Offset(x = 800f, y = 1500f))
     )
+//            .background(//color = MaterialTheme.colorScheme.onPrimary
+//        brush = Brush.linearGradient(colors = listOf( MaterialTheme.colorScheme.primary.copy(.2f),
+//           MaterialTheme.colorScheme.onPrimary.copy(.2f),
+//            MaterialTheme.colorScheme.primary.copy(.2f)),
+//             start = Offset(x=0f,y=100f), end = Offset(x = 800f, y = 1500f))
+//    )
         ) {
 
 
@@ -167,7 +166,7 @@ fun HomeScreenContent(
             Row(
                 modifier
                     .fillMaxWidth()
-                    .padding(top = 40.dp, start = 16.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    .padding(top = 60.dp, start = 16.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(text = stringResource(R.string.discover), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.secondary)
             }
         }
@@ -175,7 +174,7 @@ fun HomeScreenContent(
 
 
         item {
-            CategoryRow(categories = categories, selectedCategoryId = selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.hazeChild(hazeState))
+            CategoryRow(categories = category, selectedCategoryId =  selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.hazeChild(hazeState))
 
         }
         item {
@@ -183,7 +182,7 @@ fun HomeScreenContent(
         }
 
 
-        EventList(events = if (selectedCategoryId ==0 )event else event.filter { it.categoryId == selectedCategoryId },
+        EventList(events = if (selectedCategoryId == 0L )event else event.filter { it.eventCategory.eventCategoryId == selectedCategoryId },
 
             modifier = Modifier, onItemClick = onItemClick ,
             onShareClick = onShareClick,
@@ -195,37 +194,63 @@ fun HomeScreenContent(
 
 
 }
-
 @Composable
 fun CategoryRow(
-    categories: List<Category>,
-    selectedCategoryId: Int,
+    categories: List<EventCategory>,
+    selectedCategoryId: Long,
     modifier: Modifier = Modifier,
-    onCategorySelected: (Int) -> Unit
-){
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(start=16.dp,end= 16.dp)) {
-        items(categories){category->
-            val isSelected = selectedCategoryId == category.id
-        Button(onClick = {onCategorySelected(category.id)},
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(.2f)
-            ),
-            border = BorderStroke(width = .5.dp, color = if (isSelected)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(.2f))
-        ) {
-            Text(text = category.name,Modifier.padding(2.dp), color = if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.secondary)
-        }
+    onCategorySelected: (Long) -> Unit
+) {
 
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.padding(start = 16.dp, end = 16.dp)
+    ) {
+        itemsIndexed(categories) {index, category ->
+            if (category != null) {
+                val isSelected = category.eventCategoryId == selectedCategoryId
+                Button(
+                    onClick = {
+
+                        onCategorySelected(category.eventCategoryId)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                       containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(0.2f) else
+                        MaterialTheme.colorScheme.secondary.copy(
+                            0.2f
+                        )
+                    ),
+//                    border = BorderStroke(
+//                        width = 0.5.dp,
+//                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(
+//                            0.2f
+//                        )
+//                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = category.eventName ?: "Unknown",
+                        modifier = Modifier.padding(2.dp),
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
         }
     }
 }
+
+
+
 
 fun LazyListScope.EventList(
     events: List<Event>,
     onShareClick: (Event) -> Unit,
     modifier: Modifier,onItemClick: (String?)-> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+
 ){
         itemsIndexed(events){index,event->
+
             ItemCard(
                  id = event.eventId,
                  image = event.eventArt,
@@ -258,45 +283,45 @@ fun ItemCard(
 ) {
 
     var isSaveClicked by remember { mutableStateOf(false) }
-//    var backgroundColor by remember { mutableStateOf(Color.Transparent) }
-//    val context = LocalContext.current
+    var backgroundColor by remember { mutableStateOf(Color.Transparent) }
+    val context = LocalContext.current
 
- //   LaunchedEffect(image) {
-        // Load image as a Bitmap
-//        val imageLoader = ImageLoader(context)
-//        val request = ImageRequest.Builder(context)
-//            .data(image)
-//            .allowHardware(false)
-//            .build()
-//
-//        val result = (imageLoader.execute(request) as? SuccessResult)?.drawable
-//        val bitmap = (result?.toBitmap())
-//
-//        bitmap?.let {
-//            // Generate palette from the bitmap
-//            Palette.from(it).generate { palette ->
-//                val dominantColor = palette?.dominantSwatch?.rgb
-//                dominantColor?.let {
-//                    backgroundColor = Color(it)
-//                }
-//            }
-//        }
-//    }
-//
-//    val lightenedColor = backgroundColor.copy(alpha = 0.4f)
-//    val gradientColor = Brush.linearGradient(
-//        colors = listOf(backgroundColor, lightenedColor),
-//        start = Offset(1000f, 800f),
-//        end = Offset(1000f, 300f) // Adjust as necessary for the gradient effect
-//    )
+    LaunchedEffect(image) {
+     //    Load image as a Bitmap
+        val imageLoader = ImageLoader(context)
+        val request = ImageRequest.Builder(context)
+            .data(image)
+            .allowHardware(false)
+            .build()
+
+        val result = (imageLoader.execute(request) as? SuccessResult)?.drawable
+        val bitmap = (result?.toBitmap())
+
+        bitmap?.let {
+            // Generate palette from the bitmap
+            Palette.from(it).generate { palette ->
+                val dominantColor = palette?.mutedSwatch?.rgb
+                dominantColor?.let {
+                    backgroundColor = Color(it)
+                }
+            }
+        }
+    }
+
+    val lightenedColor = backgroundColor.copy()
+    val gradientColor = Brush.linearGradient(
+        colors = listOf(backgroundColor, lightenedColor),
+        start = Offset(1000f, 800f),
+        end = Offset(1000f, 300f) // Adjust as necessary for the gradient effect
+    )
     SharedTransitionLayout {
         Card(
             modifier = modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
+                .aspectRatio(3 / 4f)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondary.copy(.2f)
+                containerColor = lightenedColor
             ),
             border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(.2f)),
             elevation = CardDefaults.elevatedCardElevation(2.dp)
@@ -317,7 +342,9 @@ fun ItemCard(
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(3 / 2f)
+                            .padding(8.dp)
+                            .aspectRatio(1 / 1f)
+                            .clip(shape = RoundedCornerShape(12.dp))
                             .clickable { onItemClick() },
                         contentScale = ContentScale.Crop
                     )

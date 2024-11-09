@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import coil.network.HttpException
 import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.EventCategory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,11 +14,25 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.IOException
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 class EventRepository @Inject constructor() {
+    suspend fun fetchCategory(): Result<List<EventCategory>> {
+        return try {
+            val categories = CategoryApi.retrofitService.getCategory()
+            Result.success(categories)
+        } catch (e: IOException) {
+            Result.failure(e)
+        } catch (e: HttpException) {
+            Result.failure(e)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun fetchEvents(): Result<List<Event>> {
         return try {
@@ -61,26 +76,27 @@ class EventRepository @Inject constructor() {
 
             val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
             val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
-            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), "28-10-2023")
+            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.eventCategoryId.toString())
+            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().toString().format("yyyy-MM-dd"))
             val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventScope)
             val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
 
             val response = EventApi.retrofitService.createEvent(
-              eventName, eventDescription, eventDate, eventScope, eventTags, filePart
+              eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, filePart
             )
 
-            if (!response.isSuccessful) {
-                val errorBody = response.errorBody()?.string()
-                Log.e("API Response Error", "Error response: $errorBody")
-            }
-            return if (response.isSuccessful) {
-                Result.success(response.body() ?: "Success")
-
+//
+           return if (response.isSuccessful) {
+                val resultBody = response.body() ?: "No response message returned"
+                Log.d("API Success", "Server response: $resultBody")
+                Result.success(resultBody)
             } else {
                 val errorBody = response.errorBody()?.string()
                 Log.e("API Response Error", "Error response: $errorBody")
                 Result.failure(Exception("Failed to create event: $errorBody"))
             }
+
+
         } catch (e: Exception) {
             e.printStackTrace()
             return Result.failure(e)

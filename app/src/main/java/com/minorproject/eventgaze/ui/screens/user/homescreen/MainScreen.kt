@@ -110,6 +110,7 @@ fun SharedTransitionScope.MainScreen(
     restartApp: (String) -> Unit,
     retryAction: () -> Unit,
     eventUiState: EventUiState,
+    categoryUiState: CategoryUiState,
     viewModel: MainScreenViewModel = hiltViewModel(),
     navigate: (String) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope
@@ -172,17 +173,28 @@ fun SharedTransitionScope.MainScreen(
                             ErrorScreen(retryAction = retryAction, modifier = Modifier.fillMaxSize())
                         }
                         is EventUiState.Success -> {
-                            println("success: ${eventUiState.event}")
-                            HomeScreenContent(
+                            when( categoryUiState){
+                                is CategoryUiState.Loading -> ShimmerListItem(isLoading = true)
+                                is CategoryUiState.Error -> {
+                                    println("Error: ${categoryUiState.error}")
+                                    ErrorScreen(retryAction = retryAction, modifier = Modifier.fillMaxSize())
+                                }
+                                is CategoryUiState.Success -> {
+                                    HomeScreenContent(
 
-                            event = eventUiState.event,
-                            onItemClick = { event->
-                                viewModel.onItemClick(event, navigate)
-                            },
-                            animatedVisibilityScope = animatedVisibilityScope,
-                                onShareClick = onShareClick,
-                                refresh = retryAction
-                        )
+                                        event = eventUiState.event,
+                                        onItemClick = { event->
+                                            viewModel.onItemClick(event, navigate)
+                                        },
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        onShareClick = onShareClick,
+                                        refresh = retryAction,
+                                        category = categoryUiState.category
+                                    )
+                                }
+                            }
+
+
 
                         }
                     }
@@ -232,174 +244,3 @@ fun shareEvent(context: Context, shareLink: String) {
     context.startActivity(Intent.createChooser(shareIntent, "Share Link via"))
 }
 
-
-@Composable
-fun GlassmorphicBottomNavigation(hazeState: HazeState) {
-    var selectedTabIndex by remember { mutableIntStateOf(1) }
-    Box(
-        modifier = Modifier
-            .padding(vertical = 24.dp, horizontal = 64.dp)
-            .fillMaxWidth()
-            .height(64.dp)
-            .hazeChild(state = hazeState, shape = CircleShape)
-            .border(
-                width = Dp.Hairline,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = .8f),
-                        Color.White.copy(alpha = .2f),
-                    ),
-                ),
-                shape = CircleShape
-            )
-    ) {
-        BottomBarTabs(
-            tabs,
-            selectedTab = selectedTabIndex,
-            onTabSelected = {
-                selectedTabIndex = tabs.indexOf(it)
-            }
-        )
-
-        val animatedSelectedTabIndex by animateFloatAsState(
-            targetValue = selectedTabIndex.toFloat(), label = "animatedSelectedTabIndex",
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-                dampingRatio = Spring.DampingRatioLowBouncy,
-            )
-        )
-
-        val animatedColor by animateColorAsState(
-            targetValue = tabs[selectedTabIndex].color,
-            label = "animatedColor",
-            animationSpec = spring(
-                stiffness = Spring.StiffnessLow,
-            )
-        )
-
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-                .blur(50.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
-        ) {
-            val tabWidth = size.width / tabs.size
-            drawCircle(
-                color = animatedColor.copy(alpha = .6f),
-                radius = size.height / 2,
-                center = Offset(
-                    (tabWidth * animatedSelectedTabIndex) + tabWidth / 2,
-                    size.height / 2
-                )
-            )
-        }
-
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        ) {
-            val path = Path().apply {
-                addRoundRect(RoundRect(size.toRect(), CornerRadius(size.height)))
-            }
-            val length = PathMeasure().apply { setPath(path, false) }.length
-
-            val tabWidth = size.width / tabs.size
-            drawPath(
-                path,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        animatedColor.copy(alpha = 0f),
-                        animatedColor.copy(alpha = 1f),
-                        animatedColor.copy(alpha = 1f),
-                        animatedColor.copy(alpha = 0f),
-                    ),
-                    startX = tabWidth * animatedSelectedTabIndex,
-                    endX = tabWidth * (animatedSelectedTabIndex + 1),
-                ),
-                style = Stroke(
-                    width = 6f,
-                    pathEffect = PathEffect.dashPathEffect(
-                        intervals = floatArrayOf(length / 2, length)
-                    )
-                )
-            )
-        }
-    }
-}
-
-@Composable
-fun BottomBarTabs(
-    tabs: List<BottomBarTab>,
-    selectedTab: Int,
-    onTabSelected: (BottomBarTab) -> Unit,
-) {
-    CompositionLocalProvider(
-        LocalTextStyle provides LocalTextStyle.current.copy(
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-        ),
-        LocalContentColor provides Color.White
-    ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            for (tab in tabs) {
-                val alpha by animateFloatAsState(
-                    targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .35f,
-                    label = "alpha"
-                )
-                val scale by animateFloatAsState(
-                    targetValue = if (selectedTab == tabs.indexOf(tab)) 1f else .98f,
-                    visibilityThreshold = .000001f,
-                    animationSpec = spring(
-                        stiffness = Spring.StiffnessLow,
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                    ),
-                    label = "scale"
-                )
-                Column(
-                    modifier = Modifier
-                        .scale(scale)
-                        .alpha(alpha)
-                        .fillMaxHeight()
-                        .weight(1f)
-                        .pointerInput(Unit) {
-                            detectTapGestures {
-                                onTabSelected(tab)
-                            }
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Icon(imageVector = tab.icon, contentDescription = "tab ${tab.title}")
-                    Text(text = tab.title)
-                }
-            }
-        }
-    }
-}
-
-sealed class BottomBarTab(val title: String, val icon: ImageVector, val color: Color) {
-    data object Profile : BottomBarTab(
-        title = "Profile",
-        icon = Icons.Rounded.Person,
-        color = Color(0xFFFFA574)
-    )
-    data object Home : BottomBarTab(
-        title = "Home",
-        icon = Icons.Rounded.Home,
-        color = Color(0xFFFA6FFF)
-    )
-    data object Settings : BottomBarTab(
-        title = "Settings",
-        icon = Icons.Rounded.Settings,
-        color = Color(0xFFADFF64)
-    )
-}
-
-val tabs = listOf(
-    BottomBarTab.Profile,
-    BottomBarTab.Home,
-    BottomBarTab.Settings,
-)

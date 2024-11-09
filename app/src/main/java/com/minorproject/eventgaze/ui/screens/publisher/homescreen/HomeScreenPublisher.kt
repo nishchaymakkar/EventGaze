@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -105,9 +106,13 @@ fun HomeScreen(
 fun HomeScreenContentPublisher(events: List<Event>,modifier: Modifier = Modifier, navigate: (String) -> Unit,
                                viewModel: HomeScreenPublisherViewModel = hiltViewModel()) {
     Box(modifier = modifier.fillMaxSize().padding(top = 30.dp).background(color = MaterialTheme.colorScheme.onPrimary)){
+
+
+        EventList(events = events, modifier = Modifier )
+
         Row(
             modifier
-                .fillMaxWidth().align(Alignment.TopCenter)
+                .fillMaxWidth().align(Alignment.TopCenter).background(color = MaterialTheme.colorScheme.onPrimary)
                 .padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceEvenly) {
             Text(text = stringResource(R.string.publishedevents),
                 style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.secondary,
@@ -119,13 +124,9 @@ fun HomeScreenContentPublisher(events: List<Event>,modifier: Modifier = Modifier
                     .clickable(onClick = { viewModel.onProfileClick(navigate)}),contentDescription = null)
 
         }
-        Column {
-            EventList(events = events, modifier = Modifier, )
-
-        }
         FloatingActionButton(onClick = { viewModel.onAddEventClick(navigate)},modifier.align(Alignment.BottomEnd).padding(16.dp),
             containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+            Icon(imageVector = Icons.Default.EventNote, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
             //Text("Publish", modifier = modifier.padding(paddingValues = PaddingValues(0.dp)))
         }
     }
@@ -140,7 +141,7 @@ fun EventList(
     //animatedVisibilityScope: AnimatedVisibilityScope
 ){
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier.padding(bottom= 8.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier.padding(top = 70.dp, bottom= 8.dp)) {
         itemsIndexed(events){ _, event->
 
             ItemCard(
@@ -207,7 +208,7 @@ private fun ItemCard(
             .height(360.dp)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp), colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = MaterialTheme.colorScheme.background.copy(2f)
         )) {
             Column (
                 modifier

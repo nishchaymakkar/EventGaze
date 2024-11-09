@@ -26,6 +26,8 @@ import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -119,7 +121,7 @@ fun DetailScreen(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .aspectRatio(1 / 1f)
-                                    .clip(shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
+                                    //.clip(shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
                                     .align(Alignment.Start)
                                     .sharedElement(
                                         state = rememberSharedContentState(key = "event id ${event.eventId}"),
@@ -144,23 +146,23 @@ fun DetailScreen(
                                     )
                                 )
                             }
-                            Divider(color = MaterialTheme.colorScheme.tertiary)
-                            Row(
-                                modifier = modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Column (horizontalAlignment = Alignment.End) {
-                                    Text(text = "24.11.2024", color = MaterialTheme.colorScheme.secondary,
-
-                                        style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Thin
-                                        )
-                                    Text(text = "12:20 P.M", color = MaterialTheme.colorScheme.secondary,
-                                        style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Thin)
-                                }
-                            }
-                            Divider(color = MaterialTheme.colorScheme.tertiary)
+                            //Divider(color = MaterialTheme.colorScheme.tertiary)
+//                            Row(
+//                                modifier = modifier
+//                                    .fillMaxWidth()
+//                                    .padding(8.dp),
+//                                horizontalArrangement = Arrangement.End
+//                            ) {
+//                                Column (horizontalAlignment = Alignment.End) {
+//                                    Text(text = "24.11.2024", color = MaterialTheme.colorScheme.secondary,
+//
+//                                        style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Thin
+//                                        )
+//                                    Text(text = "12:20 P.M", color = MaterialTheme.colorScheme.secondary,
+//                                        style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Thin)
+//                                }
+//                            }
+                           // Divider(color = MaterialTheme.colorScheme.tertiary)
                             Row(
                                 modifier = modifier
                                     .fillMaxWidth()
@@ -178,16 +180,17 @@ fun DetailScreen(
                                     )
                                 )
                             }
-                            Divider(color = MaterialTheme.colorScheme.tertiary)
-                            Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                                Text(text = "#event #eventsGaze #eventtags",modifier.padding(16.dp), color = MaterialTheme.colorScheme.primary)
+                      //      Divider(color = MaterialTheme.colorScheme.tertiary)
+                            Row(modifier.fillMaxWidth().align(Alignment.End), horizontalArrangement = Arrangement.Start) {
+                                Text(text = "#event #eventsGaze #eventtags",modifier.padding(16.dp),
+                                    color = MaterialTheme.colorScheme.primary, fontSize = 10.sp)
                             }
-                            Divider(color = MaterialTheme.colorScheme.tertiary)
+                          //  Divider(color = MaterialTheme.colorScheme.tertiary)
                             Row(
                                 horizontalArrangement = Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = modifier
-                                    .padding(8.dp)
+                                    .padding(8.dp).align(Alignment.End)
                                     .fillMaxWidth(),
                             ) {
                                 Image(
@@ -212,7 +215,7 @@ fun DetailScreen(
                             onClick = {popUp()},
                             modifier = modifier
                                 .align(Alignment.TopStart)
-                                .padding(8.dp)
+                                .padding(top = 26.dp, start = 16.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
@@ -222,6 +225,7 @@ fun DetailScreen(
                             )
 
                         }
+                        
                     }
                 }
 

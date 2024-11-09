@@ -39,9 +39,11 @@ class MainScreenViewModel @Inject constructor(
         private set
     var eventUiState: EventUiState by mutableStateOf(EventUiState.Loading)
         private set
+    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
 
     init {
         getEvents()
+        getCategory()
 
     }
     fun getShareableLink(event: Event): String {
@@ -65,10 +67,9 @@ class MainScreenViewModel @Inject constructor(
     private val _userName = MutableStateFlow<String?>(null)
     val userName: StateFlow<String?> = _userName
 
-    init {
-        // Load the user's name when the ViewModel is created
-        loadUserName()
-    }
+init {
+    loadUserName()
+}
     fun onPiClick(navigateAndPopUp: (String) -> Unit) = navigateAndPopUp(PiScreen)
 
     fun onItemClick(eventId: String?, navigate: (String) -> Unit){
@@ -116,6 +117,37 @@ class MainScreenViewModel @Inject constructor(
                 }
 
             }
+
+
+    }
+
+    fun getCategory() {
+        viewModelScope.launch {
+
+            withContext(Dispatchers.IO){
+                categoryUiState = CategoryUiState.Loading
+                val result = eventRepository.fetchCategory()
+
+                categoryUiState = when {
+                    result.isSuccess -> {
+                        Log.d("MainScreenVieModel","Category fetched successfully: ${result.getOrThrow().size}")
+                        CategoryUiState.Success(result.getOrThrow())
+                    }
+                    result.isFailure -> {
+                        val exception = result.exceptionOrNull()
+                        Log.e("MainScreenViewModel", "Error: ${exception?.localizedMessage}")
+                        when (exception) {
+                            is IOException -> CategoryUiState.Error("Network error occurred. Please check your connection.")
+                            is HttpException -> CategoryUiState.Error("Server error occurred. Please try again later.")
+                            else -> CategoryUiState.Error("An unknown error occurred. Please try again.")
+                        }
+
+                    }
+                    else -> CategoryUiState.Error("Unexpected Error")
+                }
+            }
+
+        }
 
 
     }

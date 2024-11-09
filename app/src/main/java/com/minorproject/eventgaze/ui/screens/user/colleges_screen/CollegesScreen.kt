@@ -63,7 +63,8 @@ fun SharedTransitionScope.CollegesScreen(
                     backgroundColor = MaterialTheme.colorScheme.background,
                     tint = Color.Black.copy(alpha = .2f),
                     blurRadius = 30.dp,
-                ).background(brush = Brush.linearGradient(colors = listOf( MaterialTheme.colorScheme.primary.copy(.2f),MaterialTheme.colorScheme.onPrimary), start = Offset(x=0f,y=100f), end = Offset(x = 800f, y = 1500f)))
+                )
+                    //.background(brush = Brush.linearGradient(colors = listOf( MaterialTheme.colorScheme.primary.copy(.2f),MaterialTheme.colorScheme.onPrimary), start = Offset(x=0f,y=100f), end = Offset(x = 800f, y = 1500f)))
 
                     .padding(horizontal =  16.dp),
                 horizontalAlignment = Alignment.Start

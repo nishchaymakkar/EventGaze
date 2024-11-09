@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Snackbar
@@ -107,6 +108,7 @@ fun EventGazeApp() {
             val appState = rememberAppState()
             val eventViewModel : MainScreenViewModel = viewModel()
             Scaffold(
+                modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
                 snackbarHost = {
                     SnackbarHost(
                         hostState = appState.scaffoldHostState,
@@ -144,7 +146,8 @@ fun EventGazeApp() {
                                 restartApp = {route -> appState.clearAndNavigate(route)},
                                 animatedVisibilityScope = this@composable,
                                 eventUiState = eventViewModel.eventUiState,
-                                retryAction = eventViewModel::getEvents
+                                retryAction = eventViewModel::getEvents,
+                                categoryUiState = eventViewModel.categoryUiState,
                             )
 
                         }

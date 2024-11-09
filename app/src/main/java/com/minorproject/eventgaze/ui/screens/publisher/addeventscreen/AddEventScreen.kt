@@ -3,6 +3,7 @@
 package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,12 +42,15 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -78,6 +83,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.minorproject.eventgaze.modal.data.EventCategory
 
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import kotlinx.coroutines.delay
@@ -103,10 +109,10 @@ fun AddEventScreen(
     viewModel: AddEventViewModel = hiltViewModel()
 ) {
     val addEventUiState = viewModel.uiState
-    val categoryOptions = listOf("Technologies","Sports","Dance","Music","Cooking","Arts")
+    val categoryOptions = listOf(EventCategory(1L,"Technologies"))
     val scopeOptions = listOf("Local","National","Global")
 
-
+    val isUploading by viewModel.isLoading
     val context = LocalContext.current
     val publishEventResult by viewModel.publishEventResult.observeAsState()
 
@@ -129,17 +135,25 @@ fun AddEventScreen(
             .verticalScroll(rememberScrollState())
             .background(color = MaterialTheme.colorScheme.onPrimary),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (isUploading){
+            LinearProgressIndicator(
+                modifier = modifier.fillMaxWidth()
+                    .padding(8.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
         Spacer(
             modifier
                 .height(20.dp)
                 .fillMaxWidth())
         Row(
-            modifier = modifier.padding(start = 16.dp, top = 16.dp)
+            modifier = modifier.padding(start = 16.dp, top = 26.dp)
         ) {
             Icon(imageVector = Icons.Default.Cancel, contentDescription = null,
                 modifier
-                    .size(40.dp)
-                    .clickable(onClick = { viewModel.popUp(popUp) })
+                    .size(30.dp)
+                    .clickable(onClick = { viewModel.popUp(popUp) }),
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
         ImagePickerWithPermissions()
@@ -150,7 +164,7 @@ fun AddEventScreen(
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp)
         )
-        DropdownTextField(
+        DropdownCategoryTextField(
             label = "Select Event Category",
             options = categoryOptions,
             onValueSelected = { viewModel.onEventCategoryChange(it) }
@@ -160,6 +174,13 @@ fun AddEventScreen(
             options = scopeOptions,
             onValueSelected = {viewModel.onEventScopeChange(it)}
         )
+        EventTagsField(
+            value = addEventUiState.value.eventTags,
+            onNewValue = viewModel::onEventTagsChange,
+            modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp)
+        )
         EventDescriptionTextField(
             value = addEventUiState.value.eventDescription,
             onNewValue = viewModel::onEventDescriptionChange,
@@ -167,6 +188,7 @@ fun AddEventScreen(
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp)
         )
+
         PublishButton(
             text = "Publish",
             modifier = modifier
@@ -215,12 +237,7 @@ fun DropdownTextField(
                     contentDescription = null
                 )
             },
-            keyboardOptions = KeyboardOptions(imeAction = if (imeAction){
-                ImeAction.Done
-            } else {
-                ImeAction.None
-            }
-            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.None),
             keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()}),
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -264,7 +281,110 @@ fun DropdownTextField(
         }
     }
 }
+@ExperimentalMaterial3Api
+@Composable
+fun DropdownCategoryTextField(
+    label: String,
+    options: List<EventCategory>,
+    onValueSelected: (EventCategory) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOption by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+    var imeAction by remember { mutableStateOf(false) }
+    // Outer Box to handle the ExposedDropdownMenu logic
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        // TextField to display selected value or hint
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = { selectedOption = it },
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .menuAnchor() // Ensures alignment with the dropdown menu
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }, // Click on the field to show the dropdown
+            trailingIcon = {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                    contentDescription = null
+                )
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.None),
+            keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()}),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedLabelColor = MaterialTheme.colorScheme.secondary,
+                focusedBorderColor = MaterialTheme.colorScheme.background,
+                focusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.background,
+                focusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                focusedContainerColor = MaterialTheme.colorScheme.background,
 
+                )
+        )
+
+        // Dropdown menu with items
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.tertiary,
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.eventName) },
+                    colors = MenuItemColors(textColor = MaterialTheme.colorScheme.secondary,
+                        leadingIconColor = MaterialTheme.colorScheme.secondary,
+                        trailingIconColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.secondary,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.secondary),
+                    onClick = {
+                        imeAction = true
+                        selectedOption = option.eventName
+                        expanded = false
+                        onValueSelected(EventCategory(option.eventCategoryId,option.eventName)) // Pass the selected option to the parent composable
+                    },modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun EventTagsField(value: String, onNewValue: (String) -> Unit, modifier : Modifier = Modifier) {
+
+
+    OutlinedTextField(value = value, onValueChange = { onNewValue(it) },
+        modifier=modifier,
+        label = { Text(text = "Event Tags" ) },
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge,
+        shape = MaterialTheme.shapes.large,
+        trailingIcon = { Icon(imageVector = Icons.Default.Tag,contentDescription = null) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.background,
+            focusedTextColor = MaterialTheme.colorScheme.secondary,
+            unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+            unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
+            unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            focusedLabelColor = MaterialTheme.colorScheme.secondary
+        )
+    )
+}
 
 
 
@@ -280,7 +400,7 @@ fun EventNameTextField(value: String, onNewValue: (String) -> Unit, modifier : M
         textStyle = MaterialTheme.typography.bodyLarge,
         shape = MaterialTheme.shapes.large,
         trailingIcon = { Icon(imageVector = Icons.Default.Event,contentDescription = null) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.background,
@@ -302,11 +422,11 @@ val focusManager = LocalFocusManager.current
     OutlinedTextField(value = value, onValueChange = { onNewValue(it) },
         modifier=modifier,
         label = { Text(text = "Event Description" ) },
-        minLines = 5,
-        maxLines = 5,
+        minLines = 1,
+        maxLines = 4,
         textStyle = MaterialTheme.typography.bodyLarge,
         shape = MaterialTheme.shapes.large,
-        placeholder = { Icon(imageVector = Icons.Default.Description,contentDescription = null) },
+        trailingIcon = { Icon(imageVector = Icons.Default.Description,contentDescription = null) },
         keyboardActions = KeyboardActions(onDone ={ focusManager.clearFocus()}),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
         colors = OutlinedTextFieldDefaults.colors(
@@ -331,12 +451,14 @@ fun PublishButton(text: String, modifier: Modifier, action: () -> Unit) {
         colors =
         ButtonDefaults.buttonColors(
             containerColor =  MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+            contentColor = MaterialTheme.colorScheme.secondary
         ),
         shape = MaterialTheme.shapes.large,
         contentPadding = PaddingValues(15.dp)
     ) {
-        Text(text = text, textAlign = TextAlign.Center, maxLines = 1 )
+        Text(text = text, textAlign = TextAlign.Center, maxLines = 1 , fontWeight = FontWeight.SemiBold)
+
+     //   Icon(imageVector = Icons.Default.Send, contentDescription = null,tint = MaterialTheme.colorScheme.secondary, modifier = modifier.padding(2.dp))
     }
 }
 
@@ -344,9 +466,15 @@ fun PublishButton(text: String, modifier: Modifier, action: () -> Unit) {
 @Composable
 fun ImagePickerWithPermissions() {
     // Permission state for reading external storage
-    val storagePermissionState = rememberPermissionState(
-        permission = android.Manifest.permission.READ_MEDIA_IMAGES
-    )
+    val storagePermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(
+            permission = android.Manifest.permission.READ_MEDIA_IMAGES
+        )
+    } else {
+        rememberPermissionState(
+            permission = android.Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+    }
 
     // Check permission status
     when {

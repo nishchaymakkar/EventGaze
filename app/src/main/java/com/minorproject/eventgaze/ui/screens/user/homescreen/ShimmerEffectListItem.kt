@@ -51,9 +51,7 @@ fun ShimmerListItem(
                     Box(modifier.width(150.dp).height(40.dp).shimmerEffect())
                 }
             }
-            item {
-                CategoryRow()
-            }
+
             items(10){
                 Card (modifier.fillMaxWidth().padding(8.dp).aspectRatio(1/1f), colors = CardDefaults.cardColors(
                     containerColor = Color.Transparent

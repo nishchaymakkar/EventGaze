@@ -4,6 +4,7 @@ package com.minorproject.eventgaze.modal.network
 
 import com.google.gson.GsonBuilder
 import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.EventCategory
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -18,7 +19,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 
-private const val BASE_URL = "http://192.168.1.39:8080"
+private const val BASE_URL = "http://192.168.1.10:8080"
 private val gson = GsonBuilder()
     .setLenient()
     .create()
@@ -30,21 +31,29 @@ val client = OkHttpClient.Builder().addInterceptor(logging).build()
 private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .addConverterFactory(GsonConverterFactory.create(gson))
-    .client(client)
+   .client(client)
     .build()
 
-
+object CategoryApi{
+    val retrofitService: CategoryApiService by lazy {
+        retrofit.create(CategoryApiService::class.java)
+    }
+}
 
 object EventApi {
     val retrofitService: EventApiService by lazy {
         retrofit.create(EventApiService::class.java)
     }
 }
-
+interface CategoryApiService{
+    @GET("category/getAll")
+    suspend fun getCategory(): List<EventCategory>
+}
 
 interface EventApiService {
 
-    @GET("events")
+
+    @GET("events/getAll")
     suspend fun getEvents(): List<Event>
 
     @GET("events/id/{myId}")
@@ -54,6 +63,7 @@ interface EventApiService {
     @POST("events/create")
     suspend fun createEvent(
         @Part("eventName") eventName: RequestBody,
+        @Part("eventCategoryId") eventCategoryId: RequestBody,
         @Part("eventDescription") eventDescription: RequestBody,
         @Part("eventDate") eventDate: RequestBody,
         @Part("eventScope") eventScope: RequestBody,
