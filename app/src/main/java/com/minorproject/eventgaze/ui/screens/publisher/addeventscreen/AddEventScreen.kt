@@ -4,9 +4,16 @@ package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.net.Uri
 import android.os.Build
+import android.util.Log
+import android.util.Size
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.lifecycle.ProcessCameraProvider.getInstance
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,9 +82,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -87,11 +96,15 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.minorproject.eventgaze.modal.data.EventCategory
 
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
-import kotlinx.coroutines.delay
+import androidx.camera.core.Preview
+import androidx.camera.core.ImageCapture
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material.icons.filled.Camera
+import java.io.File
 
 @ExperimentalMaterial3Api
 @ExperimentalMaterialApi
-@Preview
+
 @Composable
 private fun AddEventScreenPreview() {
 
@@ -103,27 +116,32 @@ private fun AddEventScreenPreview() {
 @ExperimentalMaterial3Api
 @ExperimentalMaterialApi
 @Composable
+
 fun AddEventScreen(
     modifier: Modifier = Modifier,
-    popUp: ()-> Unit,
-    retry:()-> Unit,
+    popUp: () -> Unit,
+    retry: () -> Unit,
     viewModel: AddEventViewModel = hiltViewModel()
 ) {
     val addEventUiState = viewModel.uiState
     val categoryOptions by viewModel.categoryOptions.collectAsState()
-    val scopeOptions = listOf("Local","National","Global")
-
+    val scopeOptions = listOf("Local", "National", "Global")
     val isUploading by viewModel.isLoading
     val context = LocalContext.current
     val publishEventResult by viewModel.publishEventResult.observeAsState()
+
+
+
+    // Launch necessary data fetches
     LaunchedEffect(Unit) {
         viewModel.getCategory()
     }
+
+    // Observe publish event result
     LaunchedEffect(publishEventResult) {
-      publishEventResult?.let  {
+        publishEventResult?.let {
             if (it.isSuccess) {
                 Toast.makeText(context, "Event Published Successfully", Toast.LENGTH_SHORT).show()
-                // Call the function to navigate back to the previous screen
                 viewModel.popUp(popUp)
             } else {
                 Toast.makeText(context, "Failed to Publish Event", Toast.LENGTH_SHORT).show()
@@ -131,82 +149,79 @@ fun AddEventScreen(
         }
     }
 
-
     Column(
         modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(color = MaterialTheme.colorScheme.onPrimary),
-        verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (isUploading){
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (isUploading) {
             LinearProgressIndicator(
-                modifier = modifier.fillMaxWidth()
-                    .padding(8.dp),
+                modifier = modifier.fillMaxWidth().padding(8.dp),
                 color = MaterialTheme.colorScheme.primary
             )
         }
-        Spacer(
-            modifier
-                .height(20.dp)
-                .fillMaxWidth())
-        Row(
-            modifier = modifier.padding(start = 16.dp, top = 26.dp)
-        ) {
-            Icon(imageVector = Icons.Default.Cancel, contentDescription = null,
-                modifier
-                    .size(30.dp)
-                    .clickable(onClick = { viewModel.popUp(popUp) }),
+
+        Spacer(modifier = Modifier.height(20.dp).fillMaxWidth())
+
+        Row(modifier = Modifier.padding(start = 16.dp, top = 26.dp)) {
+            Icon(
+                imageVector = Icons.Default.Cancel,
+                contentDescription = null,
+                modifier = Modifier.size(30.dp).clickable { viewModel.popUp(popUp) },
                 tint = MaterialTheme.colorScheme.secondary
             )
         }
+
         ImagePickerWithPermissions()
+
+
+        // Event details form fields
         EventNameTextField(
             value = addEventUiState.value.eventName,
             onNewValue = viewModel::onEventNameChange,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp)
+            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
         )
+
         DropdownCategoryTextField(
             label = "Select Event Category",
             options = categoryOptions,
             onValueSelected = { viewModel.onEventCategoryChange(it) }
         )
+
         DropdownTextField(
             label = "Select Event Scope",
             options = scopeOptions,
-            onValueSelected = {viewModel.onEventScopeChange(it)}
+            onValueSelected = { viewModel.onEventScopeChange(it) }
         )
+
         EventTagsField(
             value = addEventUiState.value.eventTags,
             onNewValue = viewModel::onEventTagsChange,
-            modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp)
+            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
         )
+
         EventDescriptionTextField(
             value = addEventUiState.value.eventDescription,
             onNewValue = viewModel::onEventDescriptionChange,
-            modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp)
+            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
         )
 
         PublishButton(
             text = "Publish",
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            action = {viewModel.publishEvent(
-                context = context,
-                onFailure = {},
-                onSuccess = { retry()},
-            )}
+            modifier = modifier.fillMaxWidth().padding(16.dp),
+            action = {
+                viewModel.publishEvent(
+                    context = context,
+                    onFailure = { /* handle failure */ },
+                    onSuccess = { retry() }
+                )
+            }
         )
-
     }
-
 }
+
 @ExperimentalMaterial3Api
 @Composable
 fun DropdownTextField(
@@ -283,7 +298,9 @@ fun DropdownTextField(
             }
         }
     }
+
 }
+
 @ExperimentalMaterial3Api
 @Composable
 fun DropdownCategoryTextField(
@@ -478,6 +495,16 @@ fun ImagePickerWithPermissions() {
             permission = android.Manifest.permission.READ_EXTERNAL_STORAGE
         )
     }
+    val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+
+    if (cameraPermissionState.status.isGranted) {
+        // Camera permission granted
+    } else {
+        // Request camera permission
+        LaunchedEffect(Unit) {
+            cameraPermissionState.launchPermissionRequest()
+        }
+    }
 
     // Check permission status
     when {
@@ -576,3 +603,7 @@ fun ImagePickerCard(viewModel: AddEventViewModel= hiltViewModel()) {
         }
     }
 }
+
+
+
+

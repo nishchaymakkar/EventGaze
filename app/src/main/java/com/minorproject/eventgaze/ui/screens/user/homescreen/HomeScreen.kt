@@ -1,13 +1,30 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class,
+    ExperimentalAnimationApi::class, ExperimentalFoundationApi::class
+)
 
 package com.minorproject.eventgaze.ui.screens.user.homescreen
 
+
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Spring.DampingRatioLowBouncy
+import androidx.compose.animation.core.Spring.StiffnessHigh
+import androidx.compose.animation.core.Spring.StiffnessMediumLow
+import androidx.compose.animation.core.Spring.StiffnessVeryLow
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,9 +34,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +48,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
@@ -58,8 +79,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -83,8 +106,9 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
-@Preview(showSystemUi = true,)
+@Preview(showSystemUi = true)
 @ExperimentalMaterial3Api
 @Composable
 fun HomeScreenContentPreview() {
@@ -129,6 +153,8 @@ fun HomeScreenContent(
     refresh: ()-> Unit
 
 ) {
+
+
     var isRefreshing by remember { mutableStateOf(false) }
     val hazeState = remember { HazeState() }
 
@@ -147,46 +173,36 @@ fun HomeScreenContent(
         }
     ) {
 
-        LazyColumn(modifier.haze(
-        hazeState,
-        backgroundColor = MaterialTheme.colorScheme.background,
-        tint = Color.Black.copy(alpha = .2f),
-        blurRadius = 30.dp,
-    )
-//            .background(//color = MaterialTheme.colorScheme.onPrimary
-//        brush = Brush.linearGradient(colors = listOf( MaterialTheme.colorScheme.primary.copy(.2f),
-//           MaterialTheme.colorScheme.onPrimary.copy(.2f),
-//            MaterialTheme.colorScheme.primary.copy(.2f)),
-//             start = Offset(x=0f,y=100f), end = Offset(x = 800f, y = 1500f))
-//    )
-        ) {
+        Column(modifier.fillMaxWidth().haze(
+            hazeState,
+            backgroundColor = MaterialTheme.colorScheme.background,
+            tint = Color.Black.copy(alpha = .2f),
+            blurRadius = 30.dp,
+        )) {
 
-
-        item {
             Row(
                 modifier
                     .fillMaxWidth()
-                    .padding(top = 60.dp, start = 16.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    .align(Alignment.Start)
+                    .padding(top = 60.dp, start = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(text = stringResource(R.string.discover), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.secondary)
             }
-        }
 
-
-
-        item {
             CategoryRow(categories = category, selectedCategoryId =  selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.hazeChild(hazeState))
 
-        }
-        item {
-            Spacer(modifier.height(20.dp))
-        }
+            Box(modifier.fillMaxWidth()){
+                EventList(
+                    events = if (selectedCategoryId == 0L )event else event.filter { it.eventCategory.eventCategoryId == selectedCategoryId },
+                    modifier = Modifier, onItemClick = onItemClick ,
+                    onShareClick = onShareClick,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    
+                )
+            }
 
 
-        EventList(events = if (selectedCategoryId == 0L )event else event.filter { it.eventCategory.eventCategoryId == selectedCategoryId },
 
-            modifier = Modifier, onItemClick = onItemClick ,
-            onShareClick = onShareClick,
-            animatedVisibilityScope = animatedVisibilityScope )
+
 
 
 
@@ -204,7 +220,7 @@ fun CategoryRow(
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.padding(start = 16.dp, end = 16.dp)
+        modifier = modifier.padding(horizontal = 16.dp)
     ) {
         itemsIndexed(categories) {index, category ->
             if (category != null) {
@@ -220,13 +236,14 @@ fun CategoryRow(
                             0.2f
                         )
                     ),
-//                    border = BorderStroke(
-//                        width = 0.5.dp,
-//                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(
-//                            0.2f
-//                        )
-//                    ),
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    border = BorderStroke(
+                        width = 0.5.dp,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary.copy(
+                            0.2f
+                        )
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = category.eventName ?: "Unknown",
@@ -242,29 +259,62 @@ fun CategoryRow(
 
 
 
-fun LazyListScope.EventList(
+@Composable
+fun EventList(
     events: List<Event>,
     onShareClick: (Event) -> Unit,
     modifier: Modifier,onItemClick: (String?)-> Unit,
+
     animatedVisibilityScope: AnimatedVisibilityScope,
 
-){
-        itemsIndexed(events){index,event->
+    ){
 
-            ItemCard(
-                 id = event.eventId,
-                 image = event.eventArt,
-                 title = event.eventName,
-                 des = event.eventDescription, modifier = modifier,
-                 // profileimg = event.profileimg,
-                 publishername = event.eventScope,
-                 animatedVisibilityScope = animatedVisibilityScope,
-                 onShareClick = {onShareClick(event)},
-                 onItemClick = {onItemClick(event.eventId)}
-             )
+    val lazyListState = rememberLazyListState()
 
+    LazyColumn(
+        state = lazyListState,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier.padding(bottom = 64.dp)
+    ) {
+        itemsIndexed(events) { index, event ->
+
+            // Wrap each item in AnimatedContent to apply transition animations based on each event
+            AnimatedContent(
+                targetState = event, // Set each `event` as the targetState for unique animations
+                transitionSpec = {
+                    // Define the transition based on your animation preference
+                    if (targetState == event) {
+                        slideInVertically { fullHeight -> fullHeight } + fadeIn() with
+                                slideOutVertically { fullHeight -> -fullHeight } + fadeOut()
+                    } else {
+                        slideInVertically { fullHeight -> -fullHeight } + fadeIn() with
+                                slideOutVertically { fullHeight -> fullHeight } + fadeOut()
+                    }
+                }
+            ) { targetEvent ->
+                // Animated content to display the event card
+                ItemCard(
+                    id = targetEvent.eventId,
+                    image = targetEvent.eventArt,
+                    title = targetEvent.eventName,
+                    des = targetEvent.eventDescription,
+                    modifier = Modifier
+                        .animateItemPlacement(), // Animate repositioning when necessary
+                    publishername = targetEvent.eventScope,
+                    onShareClick = { onShareClick(targetEvent) },
+                    onItemClick = { onItemClick(targetEvent.eventId) },
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
+            }
+        }
     }
+
+
+
 }
+
+
+
 
 
 @Composable
@@ -318,8 +368,9 @@ fun ItemCard(
         Card(
             modifier = modifier
                 .fillMaxWidth()
-                .aspectRatio(3 / 4f)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .fillMaxHeight()
+                // .aspectRatio(3 / 4f)
+                .padding(horizontal = 16.dp, vertical = 24.dp),
             colors = CardDefaults.cardColors(
                 containerColor = lightenedColor
             ),

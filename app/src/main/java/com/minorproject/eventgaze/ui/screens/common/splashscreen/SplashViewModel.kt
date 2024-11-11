@@ -25,7 +25,7 @@ class SplashViewModel @Inject constructor(
 //             SplashScreen)}
 //         else -> openAndPopUp(SignInScreen, SplashScreen)
 //     }
-     if (accountService.hasUser) openAndPopUp(HomeScreenP, SplashScreen)
+     if (accountService.hasUser) openAndPopUp(MainScreen, SplashScreen)
      else  openAndPopUp(SignInScreen, SplashScreen)
 
  }

@@ -19,7 +19,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 
-private const val BASE_URL = "http://192.168.1.10:8080"
+private const val BASE_URL = "http://192.168.1.9:8080"
 private val gson = GsonBuilder()
     .setLenient()
     .create()

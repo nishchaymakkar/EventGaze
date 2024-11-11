@@ -127,9 +127,9 @@ fun SharedTransitionScope.MainScreen(
         modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary).fillMaxSize(),
         bottomBar = {
             AnimatedNavigationBar( // Set the bottom bar background to transparent
-               modifier = Modifier.height(64.dp).hazeChild(hazeState).padding(horizontal = 36.dp, vertical = 8.dp),
+               modifier = Modifier.height(64.dp).hazeChild(hazeState),
                 selectedIndex = selectedItemIndex,
-                cornerRadius= shapeCornerRadius(50.dp ),
+                cornerRadius= shapeCornerRadius(0.dp ),
                 ballAnimation = Teleport(tween(300)),
                 indentAnimation = Height(tween(300)),
                 barColor = MaterialTheme.colorScheme.onPrimary.copy(.8f),

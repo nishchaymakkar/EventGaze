@@ -126,5 +126,12 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze-jetpack-compose:0.4.1")
     implementation("com.exyte:animated-navigation-bar:1.0.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
+    implementation( "androidx.compose.animation:animation:1.7.5")
+    implementation ("androidx.camera:camera-core:1.1.0")
+    implementation ("androidx.camera:camera-camera2:1.1.0")
+    implementation ("androidx.camera:camera-lifecycle:1.1.0")
+    implementation ("androidx.camera:camera-view:1.1.0")
+    implementation ("com.google.guava:guava:31.1-android")
+
 
 }
