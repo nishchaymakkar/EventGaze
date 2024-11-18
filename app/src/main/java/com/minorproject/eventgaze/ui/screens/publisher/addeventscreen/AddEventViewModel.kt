@@ -2,32 +2,26 @@ package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.network.HttpException
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CategoryUiState
+import com.minorproject.eventgaze.ui.screens.user.homescreen.CollegeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -38,6 +32,8 @@ class AddEventViewModel @Inject constructor(
     private val _categoryOptions = MutableStateFlow<List<EventCategory>>(emptyList())
     val categoryOptions: StateFlow<List<EventCategory>> = _categoryOptions
 
+    private val _collegeOptions = MutableStateFlow<List<College>>(emptyList())
+    val collegeOptions : StateFlow<List<College>> = _collegeOptions
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> get() = _isLoading
@@ -47,13 +43,14 @@ class AddEventViewModel @Inject constructor(
     var uiState = mutableStateOf(AddEventUiState())
         private set
     var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
+    var collegeUiState: CollegeUiState by mutableStateOf(CollegeUiState.Loading)
 
     private val eventName
         get() = uiState.value.eventName
     private val eventDescription
         get() = uiState.value.eventDescription
-    private val eventScope
-        get() = uiState.value.eventScope
+    private val college
+        get() = uiState.value.college
     private val eventCategory
         get() = uiState.value.eventCategory
 
@@ -89,8 +86,8 @@ class AddEventViewModel @Inject constructor(
         uiState.value = uiState.value.copy(eventCategory = newValue)
     }
 
-    fun onEventScopeChange(newValue: String) {
-        uiState.value = uiState.value.copy(eventScope = newValue)
+    fun onEventCollegeChange(newValue: List<College>) {
+        uiState.value = uiState.value.copy(college = newValue)
     }
 
     fun publishEvent(context: Context, onSuccess: () -> Unit, onFailure: () -> Unit) {
@@ -102,8 +99,9 @@ class AddEventViewModel @Inject constructor(
                 eventName = eventName,
                 eventDescription = eventDescription,
                 eventTags = eventTags,
-                eventScope = eventScope,
-                eventCategory = eventCategory
+                college = college,
+                eventCategory = eventCategory,
+
             )
 
 
@@ -141,31 +139,25 @@ class AddEventViewModel @Inject constructor(
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }
-
-//            categoryUiState = when {
-//                    result.isSuccess -> {
-//                        Log.d("MainScreenVieModel","Category fetched successfully: ${result.getOrThrow().size}")
-//                        CategoryUiState.Success(result.getOrThrow())
-//                    }
-//                    result.isFailure -> {
-//                        val exception = result.exceptionOrNull()
-//                        Log.e("MainScreenViewModel", "Error: ${exception?.localizedMessage}")
-//                        when (exception) {
-//                            is IOException -> CategoryUiState.Error("Network error occurred. Please check your connection.")
-//                            is HttpException -> CategoryUiState.Error("Server error occurred. Please try again later.")
-//                            else -> CategoryUiState.Error("An unknown error occurred. Please try again.")
-//                        }
-//
-//                    }
-//                    else -> CategoryUiState.Error("Unexpected Error")
-//                }
-            }
-
         }
-
-
-
     }
+    fun getCollegeList() {
+        viewModelScope.launch {
+
+            withContext(Dispatchers.IO){
+                collegeUiState = CollegeUiState.Loading
+
+                val result = eventRepository.fetchCollegeList()
+                if (result.isSuccess) {
+                  _collegeOptions.value = result.getOrNull().orEmpty()
+                } else {
+                    // Handle the error case, e.g., log the error or show a message
+                    result.exceptionOrNull()?.printStackTrace()
+                }
+            }
+        }
+    }
+}
 
 
 

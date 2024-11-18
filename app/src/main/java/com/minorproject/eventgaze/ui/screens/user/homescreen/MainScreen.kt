@@ -26,83 +26,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.minorproject.eventgaze.R
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.items
 import com.minorproject.eventgaze.ui.screens.user.colleges_screen.CollegesScreen
 import com.minorproject.eventgaze.ui.screens.user.profilescreen.ProfileScreen
-import com.minorproject.eventgaze.ui.theme.onPrimary
-import com.minorproject.eventgaze.ui.theme.onPrimary1
-import com.minorproject.eventgaze.ui.theme.primary1
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.RoundRect
-import androidx.compose.ui.geometry.toRect
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
-import com.exyte.animatednavbar.AnimatedNavigationBar
-import com.exyte.animatednavbar.animation.balltrajectory.Teleport
-import com.exyte.animatednavbar.animation.indendshape.Height
-import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
-import com.exyte.animatednavbar.utils.noRippleClickable
-
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -117,57 +55,71 @@ fun SharedTransitionScope.MainScreen(
 ) {
     val context = LocalContext.current
     val selectedItemIndex = viewModel.selectedItemIndex
-    val hazeState = remember { HazeState() }
-    val onShareClick: (Event) -> Unit = {event ->
+   val hazeState = remember { HazeState() }
+    val onShareClick: (Event) -> Unit = { event ->
         val shareLink = viewModel.getShareableLink(event)
 
       shareEvent(context,shareLink)
     }
+
     Scaffold(
         modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary).fillMaxSize(),
+        topBar = {
+            TopAppBar(title = { when(selectedItemIndex){
+                0 -> Text(text = "Discover", style = MaterialTheme.typography.headlineSmall)
+                1 -> Text(text = "Colleges", style = MaterialTheme.typography.headlineSmall)
+                2 -> Text(text = "", style = MaterialTheme.typography.headlineSmall)
+            } }, colors = TopAppBarColors(containerColor = MaterialTheme.colorScheme.onPrimary,
+                scrolledContainerColor = Color.Transparent,
+                navigationIconContentColor = Color.Transparent,
+                titleContentColor = MaterialTheme.colorScheme.secondary,
+                actionIconContentColor = Color.Unspecified
+            )
+            )
+        },
         bottomBar = {
-            AnimatedNavigationBar( // Set the bottom bar background to transparent
-               modifier = Modifier.height(64.dp).hazeChild(hazeState),
-                selectedIndex = selectedItemIndex,
-                cornerRadius= shapeCornerRadius(0.dp ),
-                ballAnimation = Teleport(tween(300)),
-                indentAnimation = Height(tween(300)),
-                barColor = MaterialTheme.colorScheme.onPrimary.copy(.8f),
-                ballColor = MaterialTheme.colorScheme.primary
-            ) {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.onPrimary) {
                 items.forEachIndexed { index, item ->
-                   Box(
-                       modifier = Modifier.fillMaxSize()
-                           .noRippleClickable {
-                               viewModel.onBottomNavItemClick(index)
-                           },
-                       contentAlignment = Alignment.Center
-                   ){
+                    NavigationBarItem(
+                        colors = NavigationBarItemColors(
+                            selectedIconColor = MaterialTheme.colorScheme.secondary,
+                            unselectedIconColor =MaterialTheme.colorScheme.secondary,
+                            disabledTextColor = MaterialTheme.colorScheme.secondary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedTextColor = MaterialTheme.colorScheme.secondary,
+                            disabledIconColor = MaterialTheme.colorScheme.secondary,
+                            selectedIndicatorColor = MaterialTheme.colorScheme.primary
+                        ),
+                        selected = selectedItemIndex == index,
+                        onClick = { viewModel.onBottomNavItemClick(index)},
+                        label = {
+                           Text(text = item.title, fontWeight = FontWeight.ExtraBold)
+                        },
+                        icon = {
                             Icon(
-                                modifier = Modifier.size(26.dp),
-
                                 imageVector = if (index == selectedItemIndex) {
                                     item.selectedIcon
                                 } else item.unselectedIcon,
-                                contentDescription = null,
-                                tint = if (index == selectedItemIndex) MaterialTheme.colorScheme.primary else
-                                MaterialTheme.colorScheme.secondary.copy(.4f)
+                                contentDescription = null
                             )
                         }
-                }
-            }
+                    )
+                }}
 
         }
-    ) { paddingValues ->
-        val padding = paddingValues
+    ) { it ->
+
         Column(
             Modifier
-                .fillMaxSize(),
+                .padding(it).fillMaxSize()
+                .background(Color.Transparent),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             when (selectedItemIndex) {
                 0 -> {
                     when (eventUiState){
-                        is EventUiState.Loading -> ShimmerListItem(isLoading = true)
+                        is EventUiState.Loading -> CircularProgressIndicator()
                         is EventUiState.Error -> {
                             println("Error: ${eventUiState.error}")
                             ErrorScreen(retryAction = retryAction, modifier = Modifier.fillMaxSize())
@@ -189,7 +141,9 @@ fun SharedTransitionScope.MainScreen(
                                         animatedVisibilityScope = animatedVisibilityScope,
                                         onShareClick = onShareClick,
                                         refresh = retryAction,
-                                        category = categoryUiState.category
+                                        category = categoryUiState.category,
+                                        modifier = Modifier.padding(),
+                                        isloading = false
                                     )
                                 }
                             }
@@ -203,7 +157,7 @@ fun SharedTransitionScope.MainScreen(
                 1 -> CollegesScreen(
 
                     onCollegeClick = { college, _ ->
-                        viewModel.onCollegeClick(college.collegeId, navigate)
+                        viewModel.onCollegeClick(college, navigate)
                     },
                     animatedVisibilityScope = animatedVisibilityScope
                 )
@@ -239,8 +193,8 @@ fun shareEvent(context: Context, shareLink: String) {
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
         putExtra(Intent.EXTRA_TEXT,shareLink)
-        type = "text/html"
+        type = "text/plain"
     }
-    context.startActivity(Intent.createChooser(shareIntent, "Share Link via"))
+    context.startActivity(Intent.createChooser(shareIntent, null))
 }
 

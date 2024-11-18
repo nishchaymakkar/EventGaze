@@ -38,9 +38,11 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
+import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
 import com.minorproject.eventgaze.ui.common.components.PasswordFieldForSignIn
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 
@@ -92,55 +94,73 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
                         onLoginWithGoogle: () -> Unit
 ){
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.onPrimary),
-        verticalArrangement = Arrangement.Center
+   Box(Modifier.fillMaxSize()) {
+       ComplexGradientBackground()
+        Column(
+            modifier = modifier
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center
 //            .verticalScroll(
 //                rememberScrollState()
 //            ),
-    ) {
-        Row(modifier = modifier
-            .padding(start = 16.dp,end= 16.dp).fillMaxWidth()
-            .size(width = 150.dp, height = 50.dp)){
-            Text(text = stringResource(id = R.string.sign_in),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.secondary,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        ) {
+            Row(
+                modifier = modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .fillMaxWidth()
+                    .size(width = 150.dp, height = 50.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.sign_in),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
 
             Column(
                 modifier = modifier
                     .padding(start = 16.dp, end = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                EmailTextField(value = uiState.email, onNewValue = onEmailChange, modifier = modifier.fillMaxWidth())
+            ) {
+                EmailTextField(
+                    value = uiState.email,
+                    onNewValue = onEmailChange,
+                    modifier = modifier.fillMaxWidth()
+                )
 
-                PasswordFieldForSignIn(value = uiState.password, onNewValue = onPasswordChange, modifier = modifier.fillMaxWidth())
+                PasswordFieldForSignIn(
+                    value = uiState.password,
+                    onNewValue = onPasswordChange,
+                    modifier = modifier.fillMaxWidth()
+                )
             }
             Row(
                 modifier = modifier
                     .padding(start = 36.dp, top = 16.dp)
             ) {
-                Text(text = stringResource(id = R.string.forgotPassword),
+                Text(
+                    text = stringResource(id = R.string.forgotPassword),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = modifier.clickable(onClick = onForgotPasswordClick))
+                    modifier = modifier.clickable(onClick = onForgotPasswordClick)
+                )
             }
 
-            BasicButton(text = R.string.login, modifier = modifier
-                .fillMaxWidth()
-                .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
-                action =   onSignInClick,
+            BasicButton(
+                text = R.string.login,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+                action = onSignInClick,
             )
             OrDivider()
 
-            BasicButton(text = R.string.login_google, modifier = modifier
-                .fillMaxWidth()
-                .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+            BasicButton(
+                text = R.string.login_google, modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
                 action = onLoginWithGoogle
             )
             Row(
@@ -150,15 +170,21 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(text = stringResource(id = R.string.donthaveanacc),color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    text = stringResource(id = R.string.donthaveanacc),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 Spacer(modifier = modifier.size(4.dp))
-                Text(text = stringResource(id = R.string.signup),
-                    modifier= modifier.clickable(onClick = onSignUpClick),
-                    color =MaterialTheme.colorScheme.primary,
+                Text(
+                    text = stringResource(id = R.string.signup),
+                    modifier = modifier.clickable(onClick = onSignUpClick),
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.S)

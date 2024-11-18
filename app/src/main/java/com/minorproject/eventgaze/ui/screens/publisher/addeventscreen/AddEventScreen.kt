@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalPermissionsApi::class)
+@file:OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 
 package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
@@ -6,9 +6,11 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.util.Size
+import android.widget.DatePicker
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -32,8 +34,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.IconButton
@@ -70,8 +70,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.layout.ContentScale
@@ -79,7 +77,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -95,12 +92,18 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.minorproject.eventgaze.modal.data.EventCategory
 
+
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
-import androidx.camera.core.Preview
-import androidx.camera.core.ImageCapture
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.material.icons.filled.Camera
-import java.io.File
+
+import androidx.compose.material3.Checkbox
+import com.minorproject.eventgaze.modal.data.College
 
 @ExperimentalMaterial3Api
 @ExperimentalMaterialApi
@@ -125,7 +128,7 @@ fun AddEventScreen(
 ) {
     val addEventUiState = viewModel.uiState
     val categoryOptions by viewModel.categoryOptions.collectAsState()
-    val scopeOptions = listOf("Local", "National", "Global")
+    val collegeOptions by viewModel.collegeOptions.collectAsState()
     val isUploading by viewModel.isLoading
     val context = LocalContext.current
     val publishEventResult by viewModel.publishEventResult.observeAsState()
@@ -135,6 +138,7 @@ fun AddEventScreen(
     // Launch necessary data fetches
     LaunchedEffect(Unit) {
         viewModel.getCategory()
+        viewModel.getCollegeList()
     }
 
     // Observe publish event result
@@ -190,10 +194,10 @@ fun AddEventScreen(
             onValueSelected = { viewModel.onEventCategoryChange(it) }
         )
 
-        DropdownTextField(
+        DropdownCollegeTextField(
             label = "Select Event Scope",
-            options = scopeOptions,
-            onValueSelected = { viewModel.onEventScopeChange(it) }
+            options = collegeOptions,
+            onValueSelected = { viewModel.onEventCollegeChange(it) }
         )
 
         EventTagsField(
@@ -224,13 +228,14 @@ fun AddEventScreen(
 
 @ExperimentalMaterial3Api
 @Composable
-fun DropdownTextField(
+fun DropdownCollegeTextField(
     label: String,
-    options: List<String>,
-    onValueSelected: (String) -> Unit,
+    options: List<College>,
+    onValueSelected: (List<College>) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableStateOf("") }
+    var collegeChange by remember { mutableStateOf(College("",0L,"")) }
     val focusManager = LocalFocusManager.current
     var imeAction by remember { mutableStateOf(false) }
     // Outer Box to handle the ExposedDropdownMenu logic
@@ -270,7 +275,7 @@ fun DropdownTextField(
                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
                 focusedContainerColor = MaterialTheme.colorScheme.background,
 
-            )
+                )
         )
 
         // Dropdown menu with items
@@ -281,7 +286,7 @@ fun DropdownTextField(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option) },
+                    text = { Text(option.collegeName) },
                     colors = MenuItemColors(textColor = MaterialTheme.colorScheme.secondary,
                         leadingIconColor = MaterialTheme.colorScheme.secondary,
                         trailingIconColor = MaterialTheme.colorScheme.secondary,
@@ -290,9 +295,9 @@ fun DropdownTextField(
                         disabledTrailingIconColor = MaterialTheme.colorScheme.secondary),
                     onClick = {
                         imeAction = true
-                        selectedOption = option
+                        selectedOption = option.collegeName
                         expanded = false
-                        onValueSelected(option) // Pass the selected option to the parent composable
+                        onValueSelected(listOf( collegeChange)) // Pass the selected option to the parent composable
                     },modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                 )
             }
@@ -309,7 +314,7 @@ fun DropdownCategoryTextField(
     onValueSelected: (EventCategory) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf("Select An Category") }
+    var selectedOption by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     var imeAction by remember { mutableStateOf(false) }
     // Outer Box to handle the ExposedDropdownMenu logic
@@ -437,7 +442,7 @@ fun EventNameTextField(value: String, onNewValue: (String) -> Unit, modifier : M
 
 @Composable
 fun EventDescriptionTextField(value: String, onNewValue: (String) -> Unit, modifier : Modifier = Modifier) {
-val focusManager = LocalFocusManager.current
+    val focusManager = LocalFocusManager.current
 
     OutlinedTextField(value = value, onValueChange = { onNewValue(it) },
         modifier=modifier,
@@ -478,7 +483,7 @@ fun PublishButton(text: String, modifier: Modifier, action: () -> Unit) {
     ) {
         Text(text = text, textAlign = TextAlign.Center, maxLines = 1 , fontWeight = FontWeight.SemiBold)
 
-     //   Icon(imageVector = Icons.Default.Send, contentDescription = null,tint = MaterialTheme.colorScheme.secondary, modifier = modifier.padding(2.dp))
+        //   Icon(imageVector = Icons.Default.Send, contentDescription = null,tint = MaterialTheme.colorScheme.secondary, modifier = modifier.padding(2.dp))
     }
 }
 
@@ -604,6 +609,82 @@ fun ImagePickerCard(viewModel: AddEventViewModel= hiltViewModel()) {
     }
 }
 
+@Composable
+fun MultiSelectDropdownWithTextField(
+    options: List<College?>, // Allow nullable options
+    selectedOptions: List<College?>,
+    onSelectionChange: (List<College>) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
 
+    val sanitizedOptions = options.filterNotNull()
+    val sanitizedSelectedOptions = selectedOptions.filterNotNull()
 
+    val selectedStates = remember(sanitizedOptions, sanitizedSelectedOptions) {
+        sanitizedOptions.associateWith { sanitizedSelectedOptions.contains(it) }.toMutableMap()
+    }
 
+    val selectedText = if (selectedStates.filterValues { it }.isEmpty())
+        "Select Colleges"
+    else
+        selectedStates.filterValues { it }.keys.joinToString(", ") { it.collegeName ?: "Unnamed College" }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = selectedText,
+            onValueChange = { searchText = it },
+            label = { Text("Select Options") },
+            readOnly = true,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .menuAnchor()
+                .fillMaxWidth()
+                .clickable { expanded = !expanded },
+            trailingIcon = {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                    contentDescription = null
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.background,
+                focusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                focusedContainerColor = MaterialTheme.colorScheme.background,
+                focusedLabelColor = MaterialTheme.colorScheme.secondary
+            )
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            sanitizedOptions.forEach { option ->
+                DropdownMenuItem(
+                    onClick = {
+                        val isSelected = selectedStates[option] ?: false
+                        selectedStates[option] = !isSelected
+                        onSelectionChange(selectedStates.filterValues { it }.keys.toList())
+                    }
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = selectedStates[option] ?: false,
+                            onCheckedChange = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = option.collegeName ?: "Unnamed College")
+                    }
+                }
+            }
+        }
+    }
+}

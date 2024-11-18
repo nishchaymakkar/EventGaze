@@ -3,7 +3,8 @@ package com.minorproject.eventgaze.modal.network
 
 
 import com.google.gson.GsonBuilder
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -19,7 +20,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 
 
-private const val BASE_URL = "http://192.168.1.9:8080"
+private const val BASE_URL = "http://192.168.1.6:8080"
 private val gson = GsonBuilder()
     .setLenient()
     .create()
@@ -39,6 +40,11 @@ object CategoryApi{
         retrofit.create(CategoryApiService::class.java)
     }
 }
+object CollegeApi{
+    val retrofitService: CollegeApiService by lazy {
+        retrofit.create(CollegeApiService::class.java)
+    }
+}
 
 object EventApi {
     val retrofitService: EventApiService by lazy {
@@ -46,21 +52,25 @@ object EventApi {
     }
 }
 interface CategoryApiService{
-    @GET("category/getAll")
+    @GET("eventgaze/category/getAll")
     suspend fun getCategory(): List<EventCategory>
 }
 
+interface CollegeApiService{
+    @GET("eventgaze/collegelist/getAll")
+    suspend fun getCollegeList(): List<College>
+}
 interface EventApiService {
 
 
-    @GET("events/getAll")
+    @GET("eventgaze/events/getAll")
     suspend fun getEvents(): List<Event>
 
-    @GET("events/id/{myId}")
+    @GET("eventgaze/events/id/{myId}")
     suspend fun getEventById(@Path("myId") eventId: String?): Event
 
     @Multipart
-    @POST("events/create")
+    @POST("eventgaze/events/create")
     suspend fun createEvent(
         @Part("eventName") eventName: RequestBody,
         @Part("eventCategoryId") eventCategoryId: RequestBody,

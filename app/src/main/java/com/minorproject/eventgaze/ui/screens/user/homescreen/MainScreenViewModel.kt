@@ -14,13 +14,13 @@ import com.minorproject.eventgaze.DetailScreen
 import com.minorproject.eventgaze.PiScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.minorproject.eventgaze.SplashScreen
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.modal.service.AccountService
 import com.minorproject.eventgaze.modal.service.LogService
 import com.minorproject.eventgaze.ui.EventGazeViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -47,7 +47,7 @@ class MainScreenViewModel @Inject constructor(
 
     }
     fun getShareableLink(event: Event): String {
-        val baseUrl = "http://192.168.1.6:8080"
+        val baseUrl = "http://192.168.1.5:8080"
         val eventLink = "$baseUrl/events/id/${event.eventId}"
         return eventLink
     }
@@ -72,14 +72,16 @@ init {
 }
     fun onPiClick(navigateAndPopUp: (String) -> Unit) = navigateAndPopUp(PiScreen)
 
-    fun onItemClick(eventId: String?, navigate: (String) -> Unit){
-//        val eventJson = Gson().toJson(event)
-//        val encodedEventJson = java.net.URLEncoder.encode(eventJson,"UTF-8")
-        val destination ="$DetailScreen/$eventId"
+    fun onItemClick(event: Event, navigate: (String) -> Unit){
+        val eventJson = Gson().toJson(event)
+        val encodedEventJson = java.net.URLEncoder.encode(eventJson,"UTF-8")
+        val destination ="$DetailScreen/$encodedEventJson"
         navigate(destination)
     }
-    fun onCollegeClick(collegeId: Int, navigate: (String) -> Unit){
-        val destination = "${CollegeEventScreen}/$collegeId"
+    fun onCollegeClick(college:College, navigate: (String) -> Unit){
+        val collegeJson = Gson().toJson(college)
+        val encodedCollegeJson = java.net.URLEncoder.encode(collegeJson,"UTF-8")
+        val destination = "${CollegeEventScreen}/$encodedCollegeJson"
         navigate(destination)
     }
     // Function to load the user's name from AccountService

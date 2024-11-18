@@ -23,12 +23,24 @@
         >
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleInstancePerTask"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="192.168.1.5"
+                    android:port="8080"
+                    android:pathPrefix="/events/id/" />
+            </intent-filter>
+
         </activity>
     </application>
 

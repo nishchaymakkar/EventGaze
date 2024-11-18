@@ -1,10 +1,8 @@
-package com.minorproject.eventgaze.modal
+package com.minorproject.eventgaze.modal.data
 
 
-import com.minorproject.eventgaze.modal.data.EventCategory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bson.types.ObjectId
 
 @Serializable
 data class Event(
@@ -15,7 +13,7 @@ data class Event(
     @SerialName("event_name")
     val eventName: String,
     @SerialName("event_scope")
-    val eventScope: String,
+    val college: List<College>,
     @SerialName("event_tags")
     val eventTags: String,
     @SerialName("publisher_id")
@@ -23,5 +21,7 @@ data class Event(
     @SerialName("event_category")
     val eventCategory: EventCategory,
     @SerialName("event_art")
-    val eventArt: String? = null
+    val eventArt: String? = null,
+    @SerialName("event_date")
+    val eventDate: String ?= null,
 )

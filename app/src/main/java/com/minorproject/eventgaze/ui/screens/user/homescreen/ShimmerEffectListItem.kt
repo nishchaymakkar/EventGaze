@@ -43,7 +43,7 @@ fun ShimmerListItem(
 ) {
 
     if(isLoading){
-        LazyColumn(modifier.background(color = MaterialTheme.colorScheme.tertiary)) {
+        LazyColumn(modifier.background(color = MaterialTheme.colorScheme.onPrimary)) {
             item {
                 Row(
                     modifier.padding(start = 16.dp, top = 40.dp, bottom = 10.dp)
@@ -92,7 +92,7 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         initialValue = -2 * size.width.toFloat(),
         targetValue =  2* size.width.toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(1000)
+            animation = tween(700)
         )
     )
     background(

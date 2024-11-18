@@ -10,20 +10,20 @@ import androidx.compose.material.icons.outlined.School
 
 val items = listOf(
     BottomNavigationItem(
-      //  title = "Home",
+        title = "Home",
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
         hasNews = false,
     ),
     BottomNavigationItem(
-       // title = "Colleges",
+        title = "Colleges",
         selectedIcon = Icons.Filled.School,
         unselectedIcon = Icons.Outlined.School,
         hasNews = false,
         badgeCount = null
     ),
     BottomNavigationItem(
-      //  title = "Profile",
+        title = "Profile",
         selectedIcon = Icons.Filled.Person,
         unselectedIcon = Icons.Outlined.Person,
         hasNews = false,

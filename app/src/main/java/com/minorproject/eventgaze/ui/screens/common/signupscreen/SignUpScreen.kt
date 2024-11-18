@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -35,12 +36,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.minorproject.eventgaze.R
+import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
 import com.minorproject.eventgaze.ui.common.components.BasicButton
 import com.minorproject.eventgaze.ui.common.components.EmailTextField
 import com.minorproject.eventgaze.ui.common.components.OrgNameTextField
 import com.minorproject.eventgaze.ui.common.components.PasswordField
 import com.minorproject.eventgaze.ui.common.components.RepeatPasswordField
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 
 @ExperimentalMaterial3Api
 @Composable
@@ -74,28 +79,31 @@ fun SignUpScreenContent(
     onSignInClick: () -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    Column(
+    val hazeState = remember { HazeState() }
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.onPrimary),
-        verticalArrangement = Arrangement.Center
-
     ) {
-        Spacer(modifier = modifier.height(40.dp))
-
-
-            Row(modifier = modifier
-                .padding(start = 16.dp,end= 16.dp).fillMaxWidth()
-                .size(width = 150.dp, height = 50.dp)){
-                Text(text = stringResource(id = R.string.signup),
+        ComplexGradientBackground()
+        Column(modifier.align(Alignment.Center).hazeChild(hazeState),verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = modifier
+                    .padding(start = 16.dp, end = 16.dp).fillMaxWidth()
+                    .size(width = 150.dp, height = 50.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.signup),
                     style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold
                 )
             }
-            Row(modifier = modifier
-                .padding(start = 16.dp, end = 16.dp).fillMaxWidth()
-            ){
+
+            Row(
+                modifier = modifier
+                    .padding(start = 16.dp, end = 16.dp).fillMaxWidth()
+            ) {
                 SignUpTab(selectedTab = selectedTab, onTabSelected = { newTab ->
                     selectedTab = newTab
 
@@ -107,19 +115,25 @@ fun SignUpScreenContent(
                     modifier = modifier
                         .padding(start = 16.dp, end = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
-                ){
-                    EmailTextField(uiState.email, onEmailChange,modifier.fillMaxWidth())
-                    PasswordField(uiState.password, onPasswordChange,modifier.fillMaxWidth())
-                    RepeatPasswordField(uiState.repeatPassword, onRepeatPasswordChange, modifier.fillMaxWidth())}
+                ) {
+                    EmailTextField(uiState.email, onEmailChange, modifier.fillMaxWidth())
+                    PasswordField(uiState.password, onPasswordChange, modifier.fillMaxWidth())
+                    RepeatPasswordField(
+                        uiState.repeatPassword,
+                        onRepeatPasswordChange,
+                        modifier.fillMaxWidth()
+                    )
+                }
 
 
 
-                BasicButton(text = R.string.signup, modifier = modifier
-                    .fillMaxWidth()
-                    .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+                BasicButton(
+                    text = R.string.signup,
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
                     onSignUpClick,
                 )
-
 
 
             } else {
@@ -127,17 +141,24 @@ fun SignUpScreenContent(
                     modifier = modifier
                         .padding(start = 16.dp, end = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
-                ){
-                    OrgNameTextField(uiState.orgName,onOrgNameChange,modifier.fillMaxWidth())
-                    EmailTextField(uiState.email, onEmailChange,modifier.fillMaxWidth())
-                    PasswordField(uiState.password, onPasswordChange,modifier.fillMaxWidth())
-                    RepeatPasswordField(uiState.repeatPassword, onRepeatPasswordChange, modifier.fillMaxWidth())}
+                ) {
+                    OrgNameTextField(uiState.orgName, onOrgNameChange, modifier.fillMaxWidth())
+                    EmailTextField(uiState.email, onEmailChange, modifier.fillMaxWidth())
+                    PasswordField(uiState.password, onPasswordChange, modifier.fillMaxWidth())
+                    RepeatPasswordField(
+                        uiState.repeatPassword,
+                        onRepeatPasswordChange,
+                        modifier.fillMaxWidth()
+                    )
+                }
 
 
 
-                BasicButton(text = R.string.signup, modifier = modifier
-                    .fillMaxWidth()
-                    .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+                BasicButton(
+                    text = R.string.signup,
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
                     onSignUpClick,
                 )
 
@@ -149,17 +170,21 @@ fun SignUpScreenContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(text = stringResource(id = R.string.alreadyhaveacc),
-                    color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    text = stringResource(id = R.string.alreadyhaveacc),
+                    color = MaterialTheme.colorScheme.secondary
+                )
                 Spacer(modifier = modifier.size(4.dp))
-                Text(text = stringResource(id = R.string.sign_in),
-                    modifier= modifier.clickable(onClick = onSignInClick),
-                    color =MaterialTheme.colorScheme.primary,
+                Text(
+                    text = stringResource(id = R.string.sign_in),
+                    modifier = modifier.clickable(onClick = onSignInClick),
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-
+    }
 
 
 }
@@ -194,7 +219,7 @@ fun SignUpTab(selectedTab: Int, onTabSelected: (Int) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.onPrimary) // Use your desired blue color
+             // Use your desired blue color
             .padding(top = 16.dp, bottom = 16.dp),
         contentAlignment = Alignment.Center
     ) {

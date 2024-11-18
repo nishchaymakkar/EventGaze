@@ -1,33 +1,18 @@
 @file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalAnimationApi::class, ExperimentalFoundationApi::class
 )
 
 package com.minorproject.eventgaze.ui.screens.user.homescreen
 
 
-import androidx.compose.animation.AnimatedContent
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.Spring.DampingRatioLowBouncy
-import androidx.compose.animation.core.Spring.StiffnessHigh
-import androidx.compose.animation.core.Spring.StiffnessMediumLow
-import androidx.compose.animation.core.Spring.StiffnessVeryLow
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,22 +24,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -67,7 +48,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,17 +55,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -98,15 +77,13 @@ import coil.request.SuccessResult
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.minorproject.eventgaze.R
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 
 @Preview(showSystemUi = true)
 @ExperimentalMaterial3Api
@@ -114,29 +91,30 @@ import kotlin.math.absoluteValue
 fun HomeScreenContentPreview() {
 
     // Mock values for testing the composable
-//   val sampleEvent = Event(eventId = "sljlskjdfflc",// Replace with your own drawable resource
-//    eventCategory =  2L,
-//    eventName =    "Event Title",
-//    eventDescription = "This is a sample description of the event. This is a sample description of the event." +
-//            "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
-//publisherId = 101,
-//       eventTags = "sldlkd, odldl",
-//       eventScope = "sdodldlc",
-//       eventArt = "dlldfl"
-//   )
+   val sampleEvent = Event(eventId = "sljlskjdfflc",// Replace with your own drawable resource
+    eventCategory =  EventCategory(1L,"Sports"),
+    eventName =    "Event Title",
+    eventDescription = "This is a sample description of the event. This is a sample description of the event." +
+            "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
+publisherId = 101,
+       eventTags = "sldlkd, odldl",
+       college = listOf( College("IIT Selampur",1L,"")),
+       eventArt = "dlldfl"
+   )
 
    //  Use AnimatedVisibility to provide the AnimatedVisibilityScope
    EventGazeTheme {
        AnimatedVisibility(
            visible = true, // Set to true to make it visible in the preview
        ) {
-//           HomeScreenContent(event = listOf(sampleEvent), onItemClick = { sampleEvent->
-//               sampleEvent
-//           }, animatedVisibilityScope = this,
-//               onShareClick = {},
-//               refresh = {},
-//               category = listOf(Category(1L, "Sports"))
-//           )
+           HomeScreenContent(event = listOf(sampleEvent,sampleEvent,sampleEvent), onItemClick = { sampleEvent->
+               sampleEvent
+           }, animatedVisibilityScope = this,
+               onShareClick = {},
+               refresh = {},
+               category = listOf(EventCategory(1L, "Sports")),
+               isloading = true
+           )
        }
    }
 }
@@ -147,10 +125,11 @@ fun HomeScreenContent(
     event: List<Event>,
     category: List<EventCategory>,
     modifier: Modifier = Modifier,
-    onItemClick: (String?) -> Unit,
+    onItemClick: (Event) -> Unit,
     onShareClick: (Event) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    refresh: ()-> Unit
+    refresh: ()-> Unit,
+    isloading: Boolean
 
 ) {
 
@@ -161,6 +140,7 @@ fun HomeScreenContent(
     var selectedCategoryId by remember { mutableLongStateOf(0L) }
 
     val scope = rememberCoroutineScope()
+
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
         onRefresh = {
@@ -173,40 +153,48 @@ fun HomeScreenContent(
         }
     ) {
 
-        Column(modifier.fillMaxWidth().haze(
-            hazeState,
-            backgroundColor = MaterialTheme.colorScheme.background,
-            tint = Color.Black.copy(alpha = .2f),
-            blurRadius = 30.dp,
-        )) {
-
-            Row(
-                modifier
-                    .fillMaxWidth()
-                    .align(Alignment.Start)
-                    .padding(top = 60.dp, start = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(text = stringResource(R.string.discover), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.secondary)
-            }
-
-            CategoryRow(categories = category, selectedCategoryId =  selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.hazeChild(hazeState))
-
-            Box(modifier.fillMaxWidth()){
-                EventList(
-                    events = if (selectedCategoryId == 0L )event else event.filter { it.eventCategory.eventCategoryId == selectedCategoryId },
-                    modifier = Modifier, onItemClick = onItemClick ,
-                    onShareClick = onShareClick,
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    
-                )
-            }
+       Box(
+           modifier
+               .fillMaxSize()
+               .background(Color.Transparent)
+//                .haze(
+//                    hazeState,
+//                    backgroundColor = MaterialTheme.colorScheme.background,
+//                    tint = Color.Black.copy(alpha = .2f),
+//                    blurRadius = 30.dp,
+//                )
+        ) {
 
 
+          Column(modifier = modifier
+              .align(Alignment.BottomCenter)
+              .fillMaxWidth()) {
+              Spacer(
+                  modifier
+                      .fillMaxWidth()
+                      .height(30.dp)
+                      .background(Color.Transparent)
+                      .align(Alignment.Start))
+               EventList(
+                   events = if (selectedCategoryId == 0L) event else event.filter { it.eventCategory.eventCategoryId == selectedCategoryId },
+                   onItemClick = onItemClick,
+                   onShareClick = onShareClick,
+                   animatedVisibilityScope = animatedVisibilityScope,
+                   modifier = Modifier,
+
+                   )
+           }
+           CategoryRow(categories = category, selectedCategoryId =  selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.align(Alignment.TopCenter))
 
 
 
 
 
-    }}
+
+
+
+
+       }}
 
 
 }
@@ -220,10 +208,25 @@ fun CategoryRow(
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.padding(horizontal = 16.dp)
+        modifier = modifier
+            .padding(start = 16.dp)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.onPrimary,
+                        Color.Transparent
+                    ),
+                    startY = 0f,
+                    endY = 150f
+                )
+            )
     ) {
         itemsIndexed(categories) {index, category ->
             if (category != null) {
+                LaunchedEffect(selectedCategoryId) {
+                    Log.d("CategorySelection", "Selected category ID: $selectedCategoryId")
+                }
+
                 val isSelected = category.eventCategoryId == selectedCategoryId
                 Button(
                     onClick = {
@@ -231,7 +234,7 @@ fun CategoryRow(
                         onCategorySelected(category.eventCategoryId)
                     },
                     colors = ButtonDefaults.buttonColors(
-                       containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(0.2f) else
+                       containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(0.4f) else
                         MaterialTheme.colorScheme.secondary.copy(
                             0.2f
                         )
@@ -243,7 +246,7 @@ fun CategoryRow(
                         )
                     ),
                     modifier = Modifier.padding(vertical = 8.dp),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(50.dp)
                 ) {
                     Text(
                         text = category.eventName ?: "Unknown",
@@ -263,55 +266,40 @@ fun CategoryRow(
 fun EventList(
     events: List<Event>,
     onShareClick: (Event) -> Unit,
-    modifier: Modifier,onItemClick: (String?)-> Unit,
-
+    modifier: Modifier, onItemClick: (Event)-> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
-
     ){
 
-    val lazyListState = rememberLazyListState()
 
-    LazyColumn(
-        state = lazyListState,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.padding(bottom = 64.dp)
-    ) {
-        itemsIndexed(events) { index, event ->
 
-            // Wrap each item in AnimatedContent to apply transition animations based on each event
-            AnimatedContent(
-                targetState = event, // Set each `event` as the targetState for unique animations
-                transitionSpec = {
-                    // Define the transition based on your animation preference
-                    if (targetState == event) {
-                        slideInVertically { fullHeight -> fullHeight } + fadeIn() with
-                                slideOutVertically { fullHeight -> -fullHeight } + fadeOut()
-                    } else {
-                        slideInVertically { fullHeight -> -fullHeight } + fadeIn() with
-                                slideOutVertically { fullHeight -> fullHeight } + fadeOut()
-                    }
-                }
-            ) { targetEvent ->
-                // Animated content to display the event card
+
+        val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = 0, pageCount = { events.size })
+        VerticalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            val event = events[page]
+            val scaleAndAlpha = calculateScaleAndAlpha(page, pagerState)
+         Box(
+             modifier = modifier.fillMaxSize().padding(top = 32.dp)
+         )   {
                 ItemCard(
-                    id = targetEvent.eventId,
-                    image = targetEvent.eventArt,
-                    title = targetEvent.eventName,
-                    des = targetEvent.eventDescription,
-                    modifier = Modifier
-                        .animateItemPlacement(), // Animate repositioning when necessary
-                    publishername = targetEvent.eventScope,
-                    onShareClick = { onShareClick(targetEvent) },
-                    onItemClick = { onItemClick(targetEvent.eventId) },
-                    animatedVisibilityScope = animatedVisibilityScope
+                    id = event.eventId,
+                    image = event.eventArt,
+                    title = event.eventName,
+                    des = event.eventDescription,
+                    modifier = Modifier,
+                    publishername = "",
+                    onShareClick = { onShareClick(event) },
+                    onItemClick = { onItemClick(event) },
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    scale = scaleAndAlpha.first,
+                    alpha = scaleAndAlpha.second
                 )
             }
-        }
-    }
+        }}
 
 
-
-}
 
 
 
@@ -328,7 +316,9 @@ fun ItemCard(
     onItemClick:()-> Unit,
    // profileimg: Int,
     publishername: String,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    alpha: Float,
+    scale: Float,
 
 ) {
 
@@ -350,38 +340,39 @@ fun ItemCard(
         bitmap?.let {
             // Generate palette from the bitmap
             Palette.from(it).generate { palette ->
-                val dominantColor = palette?.mutedSwatch?.rgb
+                val dominantColor = palette?.dominantSwatch?.rgb
                 dominantColor?.let {
-                    backgroundColor = Color(it)
+                    // Check if the dominant color is too light
+                    if (isColorTooLight(it)) {
+                        backgroundColor = Color(0xFF333333) // Fallback dark color
+                    } else {
+                        backgroundColor = Color(it)
+                    }
                 }
             }
         }
     }
 
     val lightenedColor = backgroundColor.copy()
-    val gradientColor = Brush.linearGradient(
-        colors = listOf(backgroundColor, lightenedColor),
-        start = Offset(1000f, 800f),
-        end = Offset(1000f, 300f) // Adjust as necessary for the gradient effect
-    )
+
     SharedTransitionLayout {
         Card(
             modifier = modifier
                 .fillMaxWidth()
+                .scale(scale)
+                .alpha(alpha)
                 .fillMaxHeight()
                 // .aspectRatio(3 / 4f)
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                ,
             colors = CardDefaults.cardColors(
                 containerColor = lightenedColor
             ),
+            onClick = {onItemClick()},
             border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(.2f)),
             elevation = CardDefaults.elevatedCardElevation(2.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    //.background(MaterialTheme.colorScheme.secondary.copy(.1f))
 
-            ) {
+
                 Box(modifier) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -396,71 +387,78 @@ fun ItemCard(
                             .padding(8.dp)
                             .aspectRatio(1 / 1f)
                             .clip(shape = RoundedCornerShape(12.dp))
-                            .clickable { onItemClick() },
+                            .sharedElement(
+                                state = rememberSharedContentState(key = "eventart$image"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                boundsTransform = { initial, target ->
+                                    tween(durationMillis = 3000)
+                                }
+                            ),
                         contentScale = ContentScale.Crop
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Column(
+                Box(
                     modifier = Modifier
-                        .padding(horizontal = 8.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        .fillMaxHeight()
                         .background(Color.Transparent)
 
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                            .align(Alignment.TopCenter)
                     ) {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.weight(1f)
                         )
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-
-                        Text(
-                            text = "24.11.2024",
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.padding(start = 4.dp),
-                            maxLines = 1
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = des,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
+                   Row(
+                       modifier
+                           .align(Alignment.Center)
+                           .fillMaxWidth(),
+                       horizontalArrangement = Arrangement.Start
+                   ) {
+                        Text(
+                            text = des,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.secondary,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Justify
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(32.dp)
+                            .align(Alignment.BottomCenter)
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(2f)
                         ) {
                             Image(
                                 painter = painterResource(R.drawable.img),
                                 contentDescription = null,
-                                modifier = Modifier.size(30.dp),
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
 
@@ -469,26 +467,35 @@ fun ItemCard(
                             Text(
                                 text = publishername,
                                 color = MaterialTheme.colorScheme.secondary,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Normal
                             )
                         }
-
-                        Row {
-                            IconButton(onClick = {isSaveClicked = !isSaveClicked}) {
+                        Spacer(modifier.width(24.dp))
+                        Row(
+                           horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)
+                        ) {
+                            IconButton(onClick = {isSaveClicked = !isSaveClicked},
+                                modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.secondary.copy(.2f))) {
                                 Icon(
                                     imageVector = if (isSaveClicked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                                     contentDescription = "Save",
-                                    tint = MaterialTheme.colorScheme.secondary
+                                    tint = MaterialTheme.colorScheme.secondary,
+
                                 )
                             }
 
-                            IconButton(onClick = onShareClick) {
+                            IconButton(onClick = onShareClick,
+                                modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.secondary.copy(.2f))) {
                                 Icon(
                                     imageVector = Icons.Default.Share,
                                     contentDescription = "Share",
                                     tint = MaterialTheme.colorScheme.secondary
                                 )
-                            }
+
                         }
                     }
                 }
@@ -496,4 +503,23 @@ fun ItemCard(
         }
     }
 
+}
+
+
+
+
+@Composable
+fun calculateScaleAndAlpha(page: Int, pagerState: PagerState): Pair<Float, Float> {
+    val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+    val scale = 1f - 0.15f * kotlin.math.abs(pageOffset)
+    val alpha = 1f - 0.25f * kotlin.math.abs(pageOffset)
+    return scale.coerceIn(0.75f, 0.9f) to alpha.coerceIn(0.5f, 1f)
+}
+private fun isColorTooLight(color: Int): Boolean {
+    val red = (color shr 16) and 0xFF
+    val green = (color shr 8) and 0xFF
+    val blue = color and 0xFF
+    // Calculate the perceived brightness of the color
+    val brightness = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+    return brightness > 0.8 // Threshold for "too light" colors
 }

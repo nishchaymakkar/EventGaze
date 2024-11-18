@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.network.HttpException
+import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.modal.network.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -42,5 +43,7 @@ class DetailScreenViewModel@Inject constructor(private val eventRepository: Even
 
     }
 
-
+    fun navigateToHomeScreen(route: (String)-> Unit){
+        route(MainScreen)
+    }
 }

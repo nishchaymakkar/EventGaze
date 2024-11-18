@@ -12,7 +12,7 @@ val background = Color(0x6B161818)
 val onPrimary1 = Color(0xFF000000)
 val secondary1 = Color(0xEEFFFFFF)
 val primary1 = Color(0xFFFF0056)
-val primary2 = Color(0xFF0040FF)
+val primary2 = Color(0xFF00FF0A)
 val onSecondary = Color(0x3239FF14)
 
 val translucentColor = Color(0x00FFFFFF)

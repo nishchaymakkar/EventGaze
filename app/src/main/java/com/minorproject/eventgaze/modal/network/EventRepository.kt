@@ -4,7 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import coil.network.HttpException
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
 import dagger.Module
 import dagger.Provides
@@ -15,7 +16,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.IOException
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
@@ -80,7 +80,7 @@ class EventRepository @Inject constructor() {
             val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.eventCategoryId.toString())
             val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
                 DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventScope)
+            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.size.toString())
             val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
 
             val response = EventApi.retrofitService.createEvent(
@@ -102,6 +102,19 @@ class EventRepository @Inject constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
             return Result.failure(e)
+        }
+    }
+
+    suspend fun fetchCollegeList(): Result<List<College>> {
+        return try {
+            val colleges = CollegeApi.retrofitService.getCollegeList()
+            Result.success(colleges)
+        } catch (e: IOException) {
+            Result.failure(e)
+        } catch (e: HttpException) {
+            Result.failure(e)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 

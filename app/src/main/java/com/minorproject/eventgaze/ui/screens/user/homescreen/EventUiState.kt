@@ -1,7 +1,7 @@
 package com.minorproject.eventgaze.ui.screens.user.homescreen
 
 
-import com.minorproject.eventgaze.modal.Event
+import com.minorproject.eventgaze.modal.data.Event
 
 
 sealed interface EventUiState {
