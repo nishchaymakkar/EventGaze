@@ -80,6 +80,8 @@ import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
+import com.minorproject.eventgaze.modal.data.Publisher
+import com.minorproject.eventgaze.modal.data.Publishers
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.delay
@@ -96,7 +98,7 @@ fun HomeScreenContentPreview() {
     eventName =    "Event Title",
     eventDescription = "This is a sample description of the event. This is a sample description of the event." +
             "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
-publisherId = 101,
+publisher= Publisher(publishers = Publishers(publisherId = 1L,"","")) ,
        eventTags = "sldlkd, odldl",
        college = listOf( College("IIT Selampur",1L,"")),
        eventArt = "dlldfl"
@@ -176,12 +178,11 @@ fun HomeScreenContent(
                       .background(Color.Transparent)
                       .align(Alignment.Start))
                EventList(
-                   events = if (selectedCategoryId == 0L) event else event.filter { it.eventCategory.eventCategoryId == selectedCategoryId },
+                   events = if (selectedCategoryId == 0L) event else event.filter { it.eventCategory.categoryId == selectedCategoryId },
                    onItemClick = onItemClick,
                    onShareClick = onShareClick,
                    animatedVisibilityScope = animatedVisibilityScope,
                    modifier = Modifier,
-
                    )
            }
            CategoryRow(categories = category, selectedCategoryId =  selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.align(Alignment.TopCenter))
@@ -209,7 +210,6 @@ fun CategoryRow(
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
-            .padding(start = 16.dp)
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
@@ -227,11 +227,11 @@ fun CategoryRow(
                     Log.d("CategorySelection", "Selected category ID: $selectedCategoryId")
                 }
 
-                val isSelected = category.eventCategoryId == selectedCategoryId
+                val isSelected = category.categoryId == selectedCategoryId
                 Button(
                     onClick = {
 
-                        onCategorySelected(category.eventCategoryId)
+                        onCategorySelected(category.categoryId)
                     },
                     colors = ButtonDefaults.buttonColors(
                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(0.4f) else
@@ -249,7 +249,7 @@ fun CategoryRow(
                     shape = RoundedCornerShape(50.dp)
                 ) {
                     Text(
-                        text = category.eventName ?: "Unknown",
+                        text = category.categoryName ?: "Unknown",
                         modifier = Modifier.padding(2.dp),
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
                     )
@@ -269,9 +269,6 @@ fun EventList(
     modifier: Modifier, onItemClick: (Event)-> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     ){
-
-
-
 
         val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = 0, pageCount = { events.size })
         VerticalPager(

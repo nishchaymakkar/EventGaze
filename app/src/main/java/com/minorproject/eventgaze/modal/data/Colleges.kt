@@ -12,8 +12,10 @@ data class College(
     @SerialName("college_id")
     val collegeId: Long,
     @SerialName("collegeAddress")
-    val collegeLocation: String,
-   //@DrawableRes val collegeImg: Int,
+    val collegeAddress: String,
+
+    @SerialName("college_image")
+    val collegeImage: String? = null,
 )
 //val  colleges = listOf(
 //    College("IIT Selampur",1, "New Delhi, Delhi",R.drawable.iitselampur),

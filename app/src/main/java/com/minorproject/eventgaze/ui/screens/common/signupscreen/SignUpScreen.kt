@@ -14,12 +14,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -28,17 +41,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.minorproject.eventgaze.R
+import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
 import com.minorproject.eventgaze.ui.common.components.BasicButton
 import com.minorproject.eventgaze.ui.common.components.EmailTextField
+import com.minorproject.eventgaze.ui.common.components.NameTextField
 import com.minorproject.eventgaze.ui.common.components.OrgNameTextField
 import com.minorproject.eventgaze.ui.common.components.PasswordField
 import com.minorproject.eventgaze.ui.common.components.RepeatPasswordField
@@ -55,7 +73,7 @@ fun SignUpScreen(
     viewModel: SignUpViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState
-
+    val collegeOptions by viewModel.collegeOptions.collectAsState()
     SignUpScreenContent(
         uiState = uiState,
         onEmailChange = viewModel::onEmailChange,
@@ -63,7 +81,12 @@ fun SignUpScreen(
         onRepeatPasswordChange = viewModel::onRepeatPasswordChange,
         onSignUpClick = { viewModel.onSignUpClick(navigate) },
         onSignInClick = {viewModel.onSignInClick(popUp)},
-        onOrgNameChange = viewModel::onOrgNameChange
+        onOrgNameChange = viewModel::onPublisherOrgNameChange,
+        onFirstNameChange = viewModel::onFirstNameChange,
+        collegeOptions = collegeOptions,
+        onCollegeChange = viewModel::onCollegeChange,
+        viewModel = viewModel
+
     )
 }
 @ExperimentalMaterial3Api
@@ -73,12 +96,17 @@ fun SignUpScreenContent(
     modifier: Modifier = Modifier,
     uiState: SignUpUiState,
     onEmailChange: (String) -> Unit,
+    onFirstNameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onRepeatPasswordChange: (String) -> Unit,
     onSignUpClick: () -> Unit,
-    onSignInClick: () -> Unit
+    onSignInClick: () -> Unit,
+    onCollegeChange: (College) -> Unit,
+    collegeOptions: List<College> = emptyList(),
+    viewModel: SignUpViewModel
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
+
+    var selectedTab = viewModel.selectedTabIndex
     val hazeState = remember { HazeState() }
     Box(
         modifier = modifier
@@ -104,10 +132,7 @@ fun SignUpScreenContent(
                 modifier = modifier
                     .padding(start = 16.dp, end = 16.dp).fillMaxWidth()
             ) {
-                SignUpTab(selectedTab = selectedTab, onTabSelected = { newTab ->
-                    selectedTab = newTab
-
-                })
+                SignUpTab(selectedTab = selectedTab, onTabSelected = { viewModel.onSelectedTabChange(it) })
 
             }
             if (selectedTab == 0) {
@@ -116,13 +141,17 @@ fun SignUpScreenContent(
                         .padding(start = 16.dp, end = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    EmailTextField(uiState.email, onEmailChange, modifier.fillMaxWidth())
-                    PasswordField(uiState.password, onPasswordChange, modifier.fillMaxWidth())
+                    NameTextField(uiState.firstName, onFirstNameChange,modifier.fillMaxWidth())
+                    DropdownCollegeTextField(label = "Select College",
+                        options = collegeOptions, onValueSelected = onCollegeChange)
+                    EmailTextField(uiState.userEmail, onEmailChange, modifier.fillMaxWidth())
+                    PasswordField(uiState.userPassword, onPasswordChange, modifier.fillMaxWidth())
                     RepeatPasswordField(
                         uiState.repeatPassword,
                         onRepeatPasswordChange,
                         modifier.fillMaxWidth()
                     )
+
                 }
 
 
@@ -142,9 +171,9 @@ fun SignUpScreenContent(
                         .padding(start = 16.dp, end = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OrgNameTextField(uiState.orgName, onOrgNameChange, modifier.fillMaxWidth())
-                    EmailTextField(uiState.email, onEmailChange, modifier.fillMaxWidth())
-                    PasswordField(uiState.password, onPasswordChange, modifier.fillMaxWidth())
+                    OrgNameTextField(uiState.publisherOrgName, onOrgNameChange, modifier.fillMaxWidth())
+                    EmailTextField(uiState.userEmail, onEmailChange, modifier.fillMaxWidth())
+                    PasswordField(uiState.userPassword, onPasswordChange, modifier.fillMaxWidth())
                     RepeatPasswordField(
                         uiState.repeatPassword,
                         onRepeatPasswordChange,
@@ -194,7 +223,8 @@ fun SignUpScreenContent(
 @Composable
 fun SignUpScreenPreview() {
     val uiState = SignUpUiState(
-        email = "email@test.com"
+        userEmail =  "email@test.com",
+
     )
 
     EventGazeTheme  {
@@ -205,7 +235,10 @@ fun SignUpScreenPreview() {
             onRepeatPasswordChange = { },
             onSignUpClick = { },
             onSignInClick = {},
-            onOrgNameChange = {}
+            onOrgNameChange = {},
+            onFirstNameChange = {},
+            onCollegeChange = {},
+            viewModel = hiltViewModel()
         )
     }
 }
@@ -279,4 +312,78 @@ fun SignUpTab(selectedTab: Int, onTabSelected: (Int) -> Unit) {
         }
     }
 
+}
+
+@ExperimentalMaterial3Api
+@Composable
+fun DropdownCollegeTextField(
+    label: String,
+    options: List<College>,
+    onValueSelected: (College) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOption by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+    var imeAction by remember { mutableStateOf(false) }
+    // Outer Box to handle the ExposedDropdownMenu logic
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        // TextField to display selected value or hint
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = { selectedOption = it },
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier
+                .menuAnchor() // Ensures alignment with the dropdown menu
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }, // Click on the field to show the dropdown
+            trailingIcon = {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                    contentDescription = null
+                )
+            },
+            
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.None),
+            keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()}),
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
+                focusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary
+                )
+        )
+
+        // Dropdown menu with items
+        ExposedDropdownMenu(
+            shape = RoundedCornerShape(16.dp),
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.onPrimary.copy(.4f),
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.collegeName) },
+                    colors = MenuItemColors(textColor = MaterialTheme.colorScheme.secondary,
+                        leadingIconColor = MaterialTheme.colorScheme.secondary,
+                        trailingIconColor = MaterialTheme.colorScheme.secondary,
+                        disabledTextColor = MaterialTheme.colorScheme.secondary,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.secondary,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.secondary),
+                    onClick = {
+                        imeAction = true
+                        selectedOption = option.collegeName
+                        expanded = false
+                        onValueSelected(College(collegeName = option.collegeName, collegeId = option.collegeId, collegeAddress = option.collegeAddress, collegeImage = option.collegeImage)) // Pass the selected option to the parent composable
+                    },modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                )
+            }
+        }
+    }
 }

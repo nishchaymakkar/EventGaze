@@ -54,29 +54,29 @@ fun SignInScreen(
     navigate: (String) -> Unit,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState
-    val activity = LocalContext.current as Activity
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            viewModel.handleGoogleSignInResult(account, openAndPopUp)
-        } catch (e: ApiException) {
-            Log.d("Sign In Failed", "$e")
-            SnackbarManager.showMessage(R.string.sign_in_failed)
-        }
-    }
+  val uiState by viewModel.uiState
+//    val activity = LocalContext.current as Activity
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.StartActivityForResult()
+//    ) { result ->
+//        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+//        try {
+//            val account = task.getResult(ApiException::class.java)
+//            viewModel.handleGoogleSignInResult(account, openAndPopUp)
+//        } catch (e: ApiException) {
+//            Log.d("Sign In Failed", "$e")
+//            SnackbarManager.showMessage(R.string.sign_in_failed)
+//        }
+//    }
     SignInScreenContent(
         uiState = uiState,
         onEmailChange = viewModel::onEmailChange ,
         onPasswordChange = viewModel::onPasswordChange,
         onSignInClick = { viewModel.onSignInClick(openAndPopUp)},
-        onSignUpClick = { viewModel.onSignUpClick(navigate) },
-        onForgotPasswordClick = viewModel::onForgotPasswordClick,
-        onLoginWithGoogle = {launcher.launch(viewModel.getGoogleSignInIntent(activity))})
-
+        onSignUpClick = { viewModel.onSignUpClick(navigate)},
+        //onForgotPasswordClick = viewModel::onForgotPasswordClick,
+        //onLoginWithGoogle = {launcher.launch(viewModel.getGoogleSignInIntent(activity))})
+    )
 
 
 }
@@ -89,9 +89,9 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
                         onEmailChange: (String) -> Unit,
                         onSignInClick: () -> Unit,
                         onSignUpClick: ()  -> Unit,
-                        onForgotPasswordClick: () -> Unit,
+                      //  onForgotPasswordClick: () -> Unit,
                         onPasswordChange: (String)-> Unit,
-                        onLoginWithGoogle: () -> Unit
+                     //   onLoginWithGoogle: () -> Unit
 ){
 
    Box(Modifier.fillMaxSize()) {
@@ -136,17 +136,17 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
                     modifier = modifier.fillMaxWidth()
                 )
             }
-            Row(
-                modifier = modifier
-                    .padding(start = 36.dp, top = 16.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.forgotPassword),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = modifier.clickable(onClick = onForgotPasswordClick)
-                )
-            }
+//            Row(
+//                modifier = modifier
+//                    .padding(start = 36.dp, top = 16.dp)
+//            ) {
+//                Text(
+//                    text = stringResource(id = R.string.forgotPassword),
+//                    style = MaterialTheme.typography.titleMedium,
+//                    color = MaterialTheme.colorScheme.secondary,
+//                    modifier = modifier.clickable(onClick = onForgotPasswordClick)
+//                )
+//            }
 
             BasicButton(
                 text = R.string.login,
@@ -155,14 +155,14 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
                     .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
                 action = onSignInClick,
             )
-            OrDivider()
+           // OrDivider()
 
-            BasicButton(
-                text = R.string.login_google, modifier = modifier
-                    .fillMaxWidth()
-                    .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
-                action = onLoginWithGoogle
-            )
+//            BasicButton(
+//                text = R.string.login_google, modifier = modifier
+//                    .fillMaxWidth()
+//                    .padding(start = 36.dp, end = 36.dp, top = 20.dp, bottom = 20.dp),
+//                action = onLoginWithGoogle
+//            )
             Row(
                 modifier
                     .padding(start = 16.dp, end = 16.dp)
@@ -200,10 +200,10 @@ private fun SignInScreenPreview() {
             uiState = uiState,
             onEmailChange = {},
             onSignInClick = {},
-            onForgotPasswordClick = {},
+            //onForgotPasswordClick = {},
             onPasswordChange = {},
             onSignUpClick = {},
-            onLoginWithGoogle = {}
+            //onLoginWithGoogle = {}
         )
     }
     

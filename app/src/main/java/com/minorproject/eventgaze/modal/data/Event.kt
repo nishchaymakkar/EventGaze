@@ -16,8 +16,8 @@ data class Event(
     val college: List<College>,
     @SerialName("event_tags")
     val eventTags: String,
-    @SerialName("publisher_id")
-    val publisherId: Int? = null,
+    @SerialName("publisher")
+    val publisher: Publisher,
     @SerialName("event_category")
     val eventCategory: EventCategory,
     @SerialName("event_art")

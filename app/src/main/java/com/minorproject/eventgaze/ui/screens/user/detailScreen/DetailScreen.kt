@@ -107,11 +107,11 @@ fun DetailScreen(
                                     .aspectRatio(1 / 1f)
                                     //.clip(shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
                                     .align(Alignment.Start)
-                                    .sharedElement(
-                                        state = rememberSharedContentState(key = "eventart${event.eventArt}"),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { intital, target -> tween(durationMillis = 5000) }
-                                    )
+//                                    .sharedElement(
+//                                        state = rememberSharedContentState(key = "eventart${event?.eventArt}"),
+//                                        animatedVisibilityScope = animatedVisibilityScope,
+//                                        boundsTransform = { intital, target -> tween(durationMillis = 5000) }
+//                                    )
                             )
                             Row(
                                 modifier = modifier
@@ -128,11 +128,12 @@ fun DetailScreen(
                                     style = MaterialTheme.typography.headlineLarge,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.sharedElement(
-                                        state = rememberSharedContentState(key = event.eventName),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
-                                    )
+                                    modifier = Modifier
+//                                        .sharedElement(
+//                                        state = rememberSharedContentState(key = event.eventName),
+//                                        animatedVisibilityScope = animatedVisibilityScope,
+//                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
+//                                    )
                                 )
                             }
                             Divider(color = MaterialTheme.colorScheme.secondary.copy(.2f))
@@ -169,17 +170,20 @@ fun DetailScreen(
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
-                                Text(
-                                    text = event.eventDescription,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    textAlign = TextAlign.Justify,
-                                    modifier = Modifier.sharedElement(
-                                        state = rememberSharedContentState(key = event.eventDescription),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
+                                if (event != null) {
+                                    Text(
+                                        text = event.eventDescription ?: "",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        textAlign = TextAlign.Justify,
+                                        modifier = Modifier
+                            //                                        .sharedElement(
+                            //                                        state = rememberSharedContentState(key = event.eventDescription),
+                            //                                        animatedVisibilityScope = animatedVisibilityScope,
+                            //                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
+                            //                                    )
                                     )
-                                )
+                                }
                             }
 
 

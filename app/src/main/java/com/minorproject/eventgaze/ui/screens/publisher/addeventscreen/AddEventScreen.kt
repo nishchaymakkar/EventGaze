@@ -365,7 +365,7 @@ fun DropdownCategoryTextField(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option.eventName) },
+                    text = { Text(option.categoryName) },
                     colors = MenuItemColors(textColor = MaterialTheme.colorScheme.secondary,
                         leadingIconColor = MaterialTheme.colorScheme.secondary,
                         trailingIconColor = MaterialTheme.colorScheme.secondary,
@@ -374,9 +374,9 @@ fun DropdownCategoryTextField(
                         disabledTrailingIconColor = MaterialTheme.colorScheme.secondary),
                     onClick = {
                         imeAction = true
-                        selectedOption = option.eventName
+                        selectedOption = option.categoryName
                         expanded = false
-                        onValueSelected(EventCategory(option.eventCategoryId,option.eventName)) // Pass the selected option to the parent composable
+                        onValueSelected(EventCategory(option.categoryId,option.categoryName)) // Pass the selected option to the parent composable
                     },modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                 )
             }

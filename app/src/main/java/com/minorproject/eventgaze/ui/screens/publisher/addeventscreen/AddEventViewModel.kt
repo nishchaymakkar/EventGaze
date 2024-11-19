@@ -13,6 +13,8 @@ import androidx.lifecycle.viewModelScope
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
+import com.minorproject.eventgaze.modal.data.Publisher
+import com.minorproject.eventgaze.modal.data.Publishers
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CategoryUiState
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CollegeUiState
@@ -29,6 +31,11 @@ import javax.inject.Inject
 class AddEventViewModel @Inject constructor(
     private val eventRepository: EventRepository
 ):ViewModel() {
+
+    init {
+        getCollegeList()
+        getCategory()
+    }
     private val _categoryOptions = MutableStateFlow<List<EventCategory>>(emptyList())
     val categoryOptions: StateFlow<List<EventCategory>> = _categoryOptions
 
@@ -101,6 +108,7 @@ class AddEventViewModel @Inject constructor(
                 eventTags = eventTags,
                 college = college,
                 eventCategory = eventCategory,
+                publisher = Publisher(publishers = Publishers(publisherId = 1L,"",""))
 
             )
 
@@ -117,7 +125,6 @@ class AddEventViewModel @Inject constructor(
                     onFailure()
                 }
             } else {
-
                 _publishEventResult.value = Result.failure(Exception("Image selection is required"))
                 onFailure()
             }
@@ -133,7 +140,7 @@ class AddEventViewModel @Inject constructor(
                 categoryUiState = CategoryUiState.Loading
                 val result = eventRepository.fetchCategory()
                 if (result.isSuccess) {
-                    _categoryOptions.value = result.getOrNull().orEmpty().filter { it.eventCategoryId != 0L }
+                    _categoryOptions.value = result.getOrNull().orEmpty().filter { it.categoryId != 0L }
                 } else {
                     // Handle the error case, e.g., log the error or show a message
                     result.exceptionOrNull()?.printStackTrace()

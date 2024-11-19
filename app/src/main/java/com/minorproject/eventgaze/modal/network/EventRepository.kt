@@ -4,9 +4,13 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import coil.network.HttpException
+import com.minorproject.eventgaze.modal.User
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
+import com.minorproject.eventgaze.modal.data.Login
+import com.minorproject.eventgaze.modal.data.PublisherSignUp
+import com.minorproject.eventgaze.modal.data.StudentSignUp
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,6 +51,50 @@ class EventRepository @Inject constructor() {
             Result.failure(e)
         }
     }
+    suspend fun signUpForUser(studentSignUp: StudentSignUp): Result<String> {
+        return try {
+            val response = LoginApi.retrofitService.registerStudent(studentSignUp)
+            if (response.isSuccessful) {
+                Result.success("User signed up successfully")
+            } else {
+                Result.failure(Exception("Failed to sign up user"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+
+    }
+    suspend fun signUpForPublisher(publisherSignUp: PublisherSignUp): Result<String> {
+        return try {
+            val response = LoginApi.retrofitService.registerPublisher(publisherSignUp)
+            if (response.isSuccessful) {
+                Result.success("User signed up successfully")
+            } else {
+                Result.failure(Exception("Failed to sign up user"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+
+    }
+
+    suspend fun login(user: User): Result<Login>{
+        return try {
+            val response = LoginApi.retrofitService.login(user)
+            if (response.isSuccessful) {
+                val loginResponse = response.body()
+                if (loginResponse != null) {
+                    Result.success(loginResponse) // Return the Login object on success
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                Result.failure(Exception("Failed to sign in user: ${response.errorBody()?.string()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
     suspend fun fetEventById(eventId: String?): Result<Event>{
        return try {
            val event = EventApi.retrofitService.getEventById(eventId)
@@ -77,7 +125,7 @@ class EventRepository @Inject constructor() {
 
             val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
             val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
-            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.eventCategoryId.toString())
+            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.categoryId.toString())
             val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
                 DateTimeFormatter.ofPattern("dd-MM-yyyy")))
             val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.size.toString())

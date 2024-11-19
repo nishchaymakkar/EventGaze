@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EventCategory(
     @SerialName("event_category_id")
-    val eventCategoryId: Long,
+    val categoryId: Long,
     @SerialName("category_name")
-    val eventName: String
+    val categoryName: String
 )
