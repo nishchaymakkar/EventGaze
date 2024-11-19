@@ -1,5 +1,6 @@
 package com.minorproject.eventgaze.ui.screens.common.loginscreen
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,6 +47,7 @@ import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
 import com.minorproject.eventgaze.ui.common.components.PasswordFieldForSignIn
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 
+@SuppressLint("SuspiciousIndentation")
 @RequiresApi(Build.VERSION_CODES.S)
 @ExperimentalMaterial3Api
 @Composable

@@ -57,6 +57,31 @@ class SignInViewModel @Inject constructor(
             SnackbarManager.showMessage(AppText.empty_password_error)
             return
         }
+        viewModelScope.launch {
+            val user = User(email = email, password = password)
+
+            _loginState.value = LoginUiState.Loading // Show loading indicator
+            val result = eventRepository.login(user)
+            if (result.isSuccess) {
+                val loginResponse = result.getOrNull()
+                if (loginResponse != null) {
+                    _loginState.value = LoginUiState.Success(loginResponse)
+
+                    if (loginResponse.userRole == "STUDENT") {
+                        openAndPopUp(MainScreen, SignInScreen)
+                    } else {
+                        openAndPopUp(HomeScreenP, SignInScreen)
+                    }
+                } else {
+                    _loginState.value =
+                        LoginUiState.Error("Unexpected error: Login response is null")
+                }
+            } else if (result.isFailure) {
+                val exception = result.exceptionOrNull()
+                _loginState.value = LoginUiState.Error(exception?.message ?: "Login failed")
+            }
+        }
+
     }
 
 
@@ -94,37 +119,7 @@ class SignInViewModel @Inject constructor(
     val sessionToaken by mutableStateOf("")
     val userRole by mutableStateOf("Student")
     val userId by mutableStateOf(0L)
-    fun login() {
 
-
-        fun login(openAndPopUp: (String, String) -> Unit) {
-            val user = User(email = email, password = password)
-
-            viewModelScope.launch {
-                _loginState.value = LoginUiState.Loading // Show loading indicator
-                val result = eventRepository.login(user)
-                if (result.isSuccess) {
-                    val loginResponse = result.getOrNull()
-                    if (loginResponse != null) {
-                        _loginState.value = LoginUiState.Success(loginResponse)
-
-                        if (loginResponse.userRole == "STUDENT") {
-                            openAndPopUp(MainScreen, SignInScreen)
-                        } else {
-                            openAndPopUp(HomeScreenP, SignInScreen)
-                        }
-                    } else {
-                        _loginState.value =
-                            LoginUiState.Error("Unexpected error: Login response is null")
-                    }
-                } else if (result.isFailure) {
-                    val exception = result.exceptionOrNull()
-                    _loginState.value = LoginUiState.Error(exception?.message ?: "Login failed")
-                }
-            }
-        }
-
-    }
 }
 
 

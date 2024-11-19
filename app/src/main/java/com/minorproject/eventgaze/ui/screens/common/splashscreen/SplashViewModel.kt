@@ -1,22 +1,19 @@
 package com.minorproject.eventgaze.ui.screens.common.splashscreen
 
+import androidx.lifecycle.ViewModel
 import com.minorproject.eventgaze.HomeScreenP
 import com.minorproject.eventgaze.MainScreen
 import com.minorproject.eventgaze.SignInScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.minorproject.eventgaze.SplashScreen
-import com.minorproject.eventgaze.modal.service.AccountService
-import com.minorproject.eventgaze.modal.service.LogService
-import com.minorproject.eventgaze.ui.EventGazeViewModel
 import javax.inject.Inject
 
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
    // configurationService: ConfigurationService,
-    private val accountService: AccountService,
-    logService: LogService,
-) : EventGazeViewModel(logService){
+
+) : ViewModel(){
  fun onAppStart(openAndPopUp: (String,String)-> Unit){
 
 //     when (accountService.role) {
@@ -25,8 +22,8 @@ class SplashViewModel @Inject constructor(
 //             SplashScreen)}
 //         else -> openAndPopUp(SignInScreen, SplashScreen)
 //     }
-     if (accountService.hasUser) openAndPopUp(MainScreen, SplashScreen)
-     else  openAndPopUp(SignInScreen, SplashScreen)
+     openAndPopUp(MainScreen, SplashScreen)
+     openAndPopUp(SignInScreen, SplashScreen)
 
  }
 }

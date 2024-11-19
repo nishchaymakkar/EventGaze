@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.minorproject.eventgaze.modal.service.AccountService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -12,20 +11,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PiInformationViewModel @Inject constructor(
-    private val accountService: AccountService
+   // private val accountService: AccountService
 ): ViewModel() {
     var uiState = mutableStateOf(PiUiState())
         private set
 
     private val _userName = MutableStateFlow<String?>(null)
 
-    private fun loadUserName() {
-        viewModelScope.launch {
-            val name = accountService.getUserName()
-            Log.d("UserViewModel", "Username: $name")
-            _userName.value = name
-        }
-    }
 
 
     private val userName

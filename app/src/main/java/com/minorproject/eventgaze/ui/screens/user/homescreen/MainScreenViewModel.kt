@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.network.HttpException
 import com.google.firebase.Firebase
@@ -17,8 +18,6 @@ import com.minorproject.eventgaze.SplashScreen
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.network.EventRepository
-import com.minorproject.eventgaze.modal.service.AccountService
-import com.minorproject.eventgaze.modal.service.LogService
 import com.minorproject.eventgaze.ui.EventGazeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,10 +29,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
-    logService: LogService,
-    private val accountService: AccountService,
+
     private val eventRepository: EventRepository
-): EventGazeViewModel(logService){
+): ViewModel(){
 
     var selectedItemIndex  by mutableStateOf(0)
         private set
@@ -57,19 +55,15 @@ class MainScreenViewModel @Inject constructor(
     }
 
     fun onSignOutClick(restartApp: (String) -> Unit) {
-        launchCatching {
-            accountService.signOut()
-            Firebase.auth.signOut()
-            restartApp(SplashScreen)
-        }
+
 
     }
     private val _userName = MutableStateFlow<String?>(null)
     val userName: StateFlow<String?> = _userName
 
-init {
-    loadUserName()
-}
+//init {
+//    loadUserName()
+//}
     fun onPiClick(navigateAndPopUp: (String) -> Unit) = navigateAndPopUp(PiScreen)
 
     fun onItemClick(event: Event, navigate: (String) -> Unit){
@@ -85,13 +79,13 @@ init {
         navigate(destination)
     }
     // Function to load the user's name from AccountService
-    private fun loadUserName() {
-        viewModelScope.launch {
-            val name = accountService.getUserName()
-            Log.d("UserViewModel", "Username: $name")
-            _userName.value = name
-        }
-    }
+//    private fun loadUserName() {
+//        viewModelScope.launch {
+////            val name = accountService.getUserName()
+////            Log.d("UserViewModel", "Username: $name")
+//            _userName.value
+//        }
+//    }
      fun getEvents() {
         viewModelScope.launch {
 

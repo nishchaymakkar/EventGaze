@@ -171,8 +171,7 @@ val context = LocalContext.current
 
                         }
                         composable("$DetailScreen/{eventJson}",
-                           arguments = listOf(navArgument("eventJson"){type = NavType.StringType}),
-
+                           arguments = listOf(navArgument("eventJson"){type = NavType.StringType})
                         )
                         {backStackEntry ->
 
