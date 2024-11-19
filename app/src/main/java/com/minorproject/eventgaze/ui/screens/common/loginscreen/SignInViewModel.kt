@@ -58,7 +58,7 @@ class SignInViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            val user = User(email = email, password = password)
+            val user = User(userName = email, password = password)
 
             _loginState.value = LoginUiState.Loading // Show loading indicator
             val result = eventRepository.login(user)
