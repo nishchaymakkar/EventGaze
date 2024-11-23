@@ -2,6 +2,8 @@ package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,15 +15,17 @@ import androidx.lifecycle.viewModelScope
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
-import com.minorproject.eventgaze.modal.data.Publisher
 import com.minorproject.eventgaze.modal.data.Publishers
+import com.minorproject.eventgaze.modal.datastore.PreferencesRepository
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CategoryUiState
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CollegeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -29,18 +33,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddEventViewModel @Inject constructor(
+    private val preferencesRepository: PreferencesRepository,
     private val eventRepository: EventRepository
 ):ViewModel() {
 
-    init {
-        getCollegeList()
-        getCategory()
-    }
+
     private val _categoryOptions = MutableStateFlow<List<EventCategory>>(emptyList())
     val categoryOptions: StateFlow<List<EventCategory>> = _categoryOptions
-
     private val _collegeOptions = MutableStateFlow<List<College>>(emptyList())
     val collegeOptions : StateFlow<List<College>> = _collegeOptions
+   var collegeUiState: CollegeUiState by mutableStateOf(CollegeUiState.Loading)
+        private set
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> get() = _isLoading
@@ -49,8 +52,10 @@ class AddEventViewModel @Inject constructor(
     val publishEventResult: LiveData<Result<Unit>> = _publishEventResult
     var uiState = mutableStateOf(AddEventUiState())
         private set
-    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
-    var collegeUiState: CollegeUiState by mutableStateOf(CollegeUiState.Loading)
+
+private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
+    val sessionToken: Flow<String?> = preferencesRepository.sessionToken
+
 
     private val eventName
         get() = uiState.value.eventName
@@ -60,7 +65,9 @@ class AddEventViewModel @Inject constructor(
         get() = uiState.value.college
     private val eventCategory
         get() = uiState.value.eventCategory
-
+    init {
+        getCategory()
+    }
 
     private val eventTags
         get() = uiState.value.eventTags
@@ -93,13 +100,14 @@ class AddEventViewModel @Inject constructor(
         uiState.value = uiState.value.copy(eventCategory = newValue)
     }
 
-    fun onEventCollegeChange(newValue: List<College>) {
+    fun onEventCollegeChange(newValue: College) {
         uiState.value = uiState.value.copy(college = newValue)
     }
 
     fun publishEvent(context: Context, onSuccess: () -> Unit, onFailure: () -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
+
             val imageUri = selectedImageUri.value
             val event = Event(
                 eventId = UUID.randomUUID().toString(),
@@ -108,14 +116,21 @@ class AddEventViewModel @Inject constructor(
                 eventTags = eventTags,
                 college = college,
                 eventCategory = eventCategory,
-                publisher = Publisher(publishers = Publishers(publisherId = 1L,"",""))
+                publisher =  Publishers(publisherId = 1L,"",""),
+                eventVenue = ""
 
             )
 
 
             if (imageUri != null) {
-                val result = eventRepository.postEventToServer(event, imageUri, context)
 
+                        val result =
+                            eventRepository.postEventToServer(event, imageUri, context)
+                val token = preferencesRepository.sessionToken.firstOrNull()
+                if (token != null) {
+                  //send the session token to the eventRepository
+                    eventRepository.updateToken(token)
+                }
 
                 if (result.isSuccess) {
                     _publishEventResult.value = Result.success(Unit)
@@ -133,6 +148,7 @@ class AddEventViewModel @Inject constructor(
         }
     }
 
+
     fun getCategory() {
         viewModelScope.launch {
 
@@ -148,7 +164,11 @@ class AddEventViewModel @Inject constructor(
             }
         }
     }
-    fun getCollegeList() {
+    init {
+        getCollegeList()
+
+    }
+  private  fun getCollegeList() {
         viewModelScope.launch {
 
             withContext(Dispatchers.IO){
@@ -156,7 +176,7 @@ class AddEventViewModel @Inject constructor(
 
                 val result = eventRepository.fetchCollegeList()
                 if (result.isSuccess) {
-                  _collegeOptions.value = result.getOrNull().orEmpty()
+                    _collegeOptions.value = result.getOrNull().orEmpty()
                 } else {
                     // Handle the error case, e.g., log the error or show a message
                     result.exceptionOrNull()?.printStackTrace()
@@ -164,6 +184,8 @@ class AddEventViewModel @Inject constructor(
             }
         }
     }
+
+
 }
 
 

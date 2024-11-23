@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.minorproject.eventgaze.R
+import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import kotlinx.coroutines.delay
 const val SPlASH_TIMEOUT = 500L
@@ -54,7 +55,7 @@ fun SplashScreenContent(modifier: Modifier = Modifier,onAppStart: ()-> Unit){
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ){
-        Image(painter = painterResource(R.drawable.splashbackground), contentScale = ContentScale.Crop, contentDescription = null)
+       ComplexGradientBackground()
     }
 
     LaunchedEffect(true) {

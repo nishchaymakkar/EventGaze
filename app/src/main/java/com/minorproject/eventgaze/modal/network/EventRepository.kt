@@ -17,7 +17,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -25,7 +28,9 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-class EventRepository @Inject constructor() {
+class EventRepository @Inject constructor(
+    private val authInterceptor: AuthInterceptor
+) {
     suspend fun fetchCategory(): Result<List<EventCategory>> {
         return try {
             val categories = CategoryApi.retrofitService.getCategory()
@@ -95,6 +100,8 @@ class EventRepository @Inject constructor() {
             Result.failure(e)
         }
     }
+
+
     suspend fun fetEventById(eventId: String?): Result<Event>{
        return try {
            val event = EventApi.retrofitService.getEventById(eventId)
@@ -128,11 +135,11 @@ class EventRepository @Inject constructor() {
             val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.categoryId.toString())
             val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
                 DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.size.toString())
+            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeName)
             val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
 
             val response = EventApi.retrofitService.createEvent(
-              eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, filePart
+            eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, filePart
             )
 
 //
@@ -165,7 +172,11 @@ class EventRepository @Inject constructor() {
             Result.failure(e)
         }
     }
-
+    //get the session token from viewModel and update the authInterceptor
+    fun updateToken(token: String) {
+        authInterceptor.authToken = token
+        Log.d("AuthInterceptor", "Token updated: $token")
+    }
 
 }
 @Module
@@ -174,7 +185,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideEventRepository(): EventRepository {
-        return EventRepository()
+    fun provideEventRepository(authInterceptor: AuthInterceptor): EventRepository {
+        return EventRepository(authInterceptor)
     }
 }

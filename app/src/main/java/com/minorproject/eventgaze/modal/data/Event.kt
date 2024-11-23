@@ -12,16 +12,18 @@ data class Event(
     val eventId: String,
     @SerialName("event_name")
     val eventName: String,
-    @SerialName("event_scope")
-    val college: List<College>,
+    @SerialName("college_id")
+    val college: College,
     @SerialName("event_tags")
     val eventTags: String,
     @SerialName("publisher")
-    val publisher: Publisher,
+    val publisher: Publishers? = null,
     @SerialName("event_category")
     val eventCategory: EventCategory,
     @SerialName("event_art")
     val eventArt: String? = null,
     @SerialName("event_date")
     val eventDate: String ?= null,
+    @SerialName("event_venue")
+    val eventVenue: String
 )

@@ -134,5 +134,6 @@ dependencies {
     implementation ("com.google.guava:guava:31.1-android")
     implementation("com.google.accompanist:accompanist-pager:0.30.0")
 
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
 
 }

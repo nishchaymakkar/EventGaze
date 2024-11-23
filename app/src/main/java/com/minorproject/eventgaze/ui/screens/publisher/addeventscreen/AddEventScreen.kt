@@ -95,7 +95,8 @@ import com.minorproject.eventgaze.modal.data.EventCategory
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material.icons.filled.NavigateBefore
+import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -104,6 +105,7 @@ import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 
 import androidx.compose.material3.Checkbox
 import com.minorproject.eventgaze.modal.data.College
+import com.minorproject.eventgaze.ui.screens.user.homescreen.CollegeUiState
 
 @ExperimentalMaterial3Api
 @ExperimentalMaterialApi
@@ -128,17 +130,17 @@ fun AddEventScreen(
 ) {
     val addEventUiState = viewModel.uiState
     val categoryOptions by viewModel.categoryOptions.collectAsState()
-    val collegeOptions by viewModel.collegeOptions.collectAsState()
+
     val isUploading by viewModel.isLoading
     val context = LocalContext.current
     val publishEventResult by viewModel.publishEventResult.observeAsState()
-
+    val collegeOptions by viewModel.collegeOptions.collectAsState()
 
 
     // Launch necessary data fetches
     LaunchedEffect(Unit) {
         viewModel.getCategory()
-        viewModel.getCollegeList()
+      //  viewModel.getCollegeList()
     }
 
     // Observe publish event result
@@ -153,76 +155,91 @@ fun AddEventScreen(
         }
     }
 
-    Column(
-        modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .background(color = MaterialTheme.colorScheme.onPrimary),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (isUploading) {
-            LinearProgressIndicator(
-                modifier = modifier.fillMaxWidth().padding(8.dp),
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
+  Scaffold(
+      topBar = {
+          TopAppBar(
+              title = {},
+              navigationIcon = {
+                  Icon(
+                      imageVector = Icons.Default.NavigateBefore,
+                      contentDescription = null,
+                      modifier = Modifier.size(30.dp).clickable { viewModel.popUp(popUp) },
+                      tint = MaterialTheme.colorScheme.secondary
+                  )
+              },
+              colors = TopAppBarDefaults.topAppBarColors(
+                  containerColor = MaterialTheme.colorScheme.onPrimary,
+                  titleContentColor = MaterialTheme.colorScheme.secondary
 
-        Spacer(modifier = Modifier.height(20.dp).fillMaxWidth())
+              )
 
-        Row(modifier = Modifier.padding(start = 16.dp, top = 26.dp)) {
-            Icon(
-                imageVector = Icons.Default.Cancel,
-                contentDescription = null,
-                modifier = Modifier.size(30.dp).clickable { viewModel.popUp(popUp) },
-                tint = MaterialTheme.colorScheme.secondary
-            )
-        }
-
-        ImagePickerWithPermissions()
-
-
-        // Event details form fields
-        EventNameTextField(
-            value = addEventUiState.value.eventName,
-            onNewValue = viewModel::onEventNameChange,
-            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
-        )
-
-        DropdownCategoryTextField(
-            label = "Select Event Category",
-            options = categoryOptions,
-            onValueSelected = { viewModel.onEventCategoryChange(it) }
-        )
-
-        DropdownCollegeTextField(
-            label = "Select Event Scope",
-            options = collegeOptions,
-            onValueSelected = { viewModel.onEventCollegeChange(it) }
-        )
-
-        EventTagsField(
-            value = addEventUiState.value.eventTags,
-            onNewValue = viewModel::onEventTagsChange,
-            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
-        )
-
-        EventDescriptionTextField(
-            value = addEventUiState.value.eventDescription,
-            onNewValue = viewModel::onEventDescriptionChange,
-            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
-        )
-
-        PublishButton(
-            text = "Publish",
-            modifier = modifier.fillMaxWidth().padding(16.dp),
-            action = {
-                viewModel.publishEvent(
-                    context = context,
-                    onFailure = { /* handle failure */ },
-                    onSuccess = { retry() }
+          )
+      }
+  ){it ->
+        Column(
+            modifier
+                .fillMaxSize().padding(it)
+                .verticalScroll(rememberScrollState())
+                .background(color = MaterialTheme.colorScheme.onPrimary),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (isUploading) {
+                LinearProgressIndicator(
+                    modifier = modifier.fillMaxWidth().padding(8.dp),
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-        )
+
+
+
+
+
+            ImagePickerWithPermissions()
+
+
+            // Event details form fields
+            EventNameTextField(
+                value = addEventUiState.value.eventName,
+                onNewValue = viewModel::onEventNameChange,
+                modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            )
+
+            DropdownCategoryTextField(
+                label = "Select Event Category",
+                options = categoryOptions,
+                onValueSelected = { viewModel.onEventCategoryChange(it) }
+            )
+
+            DropdownCollegeTextField(
+                label = "Select College",
+                options = collegeOptions,
+                onValueSelected = { viewModel.onEventCollegeChange(it) }
+            )
+
+            EventTagsField(
+                value = addEventUiState.value.eventTags,
+                onNewValue = viewModel::onEventTagsChange,
+                modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            )
+
+            EventDescriptionTextField(
+                value = addEventUiState.value.eventDescription,
+                onNewValue = viewModel::onEventDescriptionChange,
+                modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            )
+
+            PublishButton(
+                text = "Publish",
+                modifier = modifier.fillMaxWidth().padding(16.dp),
+                action = {
+                    viewModel.publishEvent(
+                        context = context,
+                        onFailure = { /* handle failure */ },
+                        onSuccess = { retry() }
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -231,11 +248,10 @@ fun AddEventScreen(
 fun DropdownCollegeTextField(
     label: String,
     options: List<College>,
-    onValueSelected: (List<College>) -> Unit,
+    onValueSelected: (College) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOption by remember { mutableStateOf("") }
-    var collegeChange by remember { mutableStateOf(College("",0L,"")) }
     val focusManager = LocalFocusManager.current
     var imeAction by remember { mutableStateOf(false) }
     // Outer Box to handle the ExposedDropdownMenu logic
@@ -250,9 +266,9 @@ fun DropdownCollegeTextField(
             label = { Text(label) },
             readOnly = true,
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp)
                 .menuAnchor() // Ensures alignment with the dropdown menu
                 .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp)
                 .clickable { expanded = !expanded }, // Click on the field to show the dropdown
             trailingIcon = {
                 Icon(
@@ -260,6 +276,7 @@ fun DropdownCollegeTextField(
                     contentDescription = null
                 )
             },
+
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.None),
             keyboardActions = KeyboardActions(onDone = {focusManager.clearFocus()}),
             shape = RoundedCornerShape(16.dp),
@@ -274,15 +291,15 @@ fun DropdownCollegeTextField(
                 unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
                 focusedContainerColor = MaterialTheme.colorScheme.background,
-
-                )
+            )
         )
 
         // Dropdown menu with items
         ExposedDropdownMenu(
+            shape = RoundedCornerShape(16.dp),
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = MaterialTheme.colorScheme.tertiary,
+            containerColor = MaterialTheme.colorScheme.onPrimary,
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -297,13 +314,12 @@ fun DropdownCollegeTextField(
                         imeAction = true
                         selectedOption = option.collegeName
                         expanded = false
-                        onValueSelected(listOf( collegeChange)) // Pass the selected option to the parent composable
+                        onValueSelected(College(collegeName = option.collegeName, collegeId = option.collegeId, collegeAddress = option.collegeAddress, collegeImage = option.collegeImage)) // Pass the selected option to the parent composable
                     },modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                 )
             }
         }
     }
-
 }
 
 @ExperimentalMaterial3Api
@@ -361,7 +377,7 @@ fun DropdownCategoryTextField(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = MaterialTheme.colorScheme.tertiary,
+            containerColor = MaterialTheme.colorScheme.onPrimary,
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -592,7 +608,9 @@ fun ImagePickerCard(viewModel: AddEventViewModel= hiltViewModel()) {
             } else {
                 // Display placeholder content for the empty card
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -600,91 +618,91 @@ fun ImagePickerCard(viewModel: AddEventViewModel= hiltViewModel()) {
                         imageVector = Icons.Default.AddPhotoAlternate,
                         contentDescription = "Add Image",
                         modifier = Modifier.size(48.dp),
-                        tint = Color.Gray
+                        tint = MaterialTheme.colorScheme.secondary
                     )
-                    Text("Tap to select an image")
+                    Text("Tap to select an image", color = MaterialTheme.colorScheme.secondary)
                 }
             }
         }
     }
 }
-
-@Composable
-fun MultiSelectDropdownWithTextField(
-    options: List<College?>, // Allow nullable options
-    selectedOptions: List<College?>,
-    onSelectionChange: (List<College>) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var searchText by remember { mutableStateOf("") }
-
-    val sanitizedOptions = options.filterNotNull()
-    val sanitizedSelectedOptions = selectedOptions.filterNotNull()
-
-    val selectedStates = remember(sanitizedOptions, sanitizedSelectedOptions) {
-        sanitizedOptions.associateWith { sanitizedSelectedOptions.contains(it) }.toMutableMap()
-    }
-
-    val selectedText = if (selectedStates.filterValues { it }.isEmpty())
-        "Select Colleges"
-    else
-        selectedStates.filterValues { it }.keys.joinToString(", ") { it.collegeName ?: "Unnamed College" }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        OutlinedTextField(
-            value = selectedText,
-            onValueChange = { searchText = it },
-            label = { Text("Select Options") },
-            readOnly = true,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .menuAnchor()
-                .fillMaxWidth()
-                .clickable { expanded = !expanded },
-            trailingIcon = {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                    contentDescription = null
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.background,
-                focusedTextColor = MaterialTheme.colorScheme.secondary,
-                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
-                unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
-                unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                focusedContainerColor = MaterialTheme.colorScheme.background,
-                focusedLabelColor = MaterialTheme.colorScheme.secondary
-            )
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            sanitizedOptions.forEach { option ->
-                DropdownMenuItem(
-                    onClick = {
-                        val isSelected = selectedStates[option] ?: false
-                        selectedStates[option] = !isSelected
-                        onSelectionChange(selectedStates.filterValues { it }.keys.toList())
-                    }
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = selectedStates[option] ?: false,
-                            onCheckedChange = null
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = option.collegeName ?: "Unnamed College")
-                    }
-                }
-            }
-        }
-    }
-}
+//
+//@Composable
+//fun MultiSelectDropdownWithTextField(
+//    options: List<College?>, // Allow nullable options
+//    selectedOptions: College,
+//    onSelectionChange: (College) -> Unit
+//) {
+//    var expanded by remember { mutableStateOf(false) }
+//    var searchText by remember { mutableStateOf("") }
+//
+//    val sanitizedOptions = options.filterNotNull()
+//    val sanitizedSelectedOptions = selectedOptions.filterNotNull()
+//
+//    val selectedStates = remember(sanitizedOptions, sanitizedSelectedOptions) {
+//        sanitizedOptions.associateWith { sanitizedSelectedOptions.contains(it) }.toMutableMap()
+//    }
+//
+//    val selectedText = if (selectedStates.filterValues { it }.isEmpty())
+//        "Select Colleges"
+//    else
+//        selectedStates.filterValues { it }.keys.joinToString(", ") { it.collegeName ?: "Unnamed College" }
+//
+//    ExposedDropdownMenuBox(
+//        expanded = expanded,
+//        onExpandedChange = { expanded = !expanded }
+//    ) {
+//        OutlinedTextField(
+//            value = selectedText,
+//            onValueChange = { searchText = it },
+//            label = { Text("Select Options") },
+//            readOnly = true,
+//            modifier = Modifier
+//                .padding(horizontal = 16.dp)
+//                .menuAnchor()
+//                .fillMaxWidth()
+//                .clickable { expanded = !expanded },
+//            trailingIcon = {
+//                Icon(
+//                    imageVector = if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+//                    contentDescription = null
+//                )
+//            },
+//            colors = OutlinedTextFieldDefaults.colors(
+//                focusedTrailingIconColor = MaterialTheme.colorScheme.primary,
+//                unfocusedBorderColor = MaterialTheme.colorScheme.background,
+//                focusedTextColor = MaterialTheme.colorScheme.secondary,
+//                unfocusedTextColor = MaterialTheme.colorScheme.secondary,
+//                unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
+//                unfocusedTrailingIconColor = MaterialTheme.colorScheme.secondary,
+//                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+//                focusedContainerColor = MaterialTheme.colorScheme.background,
+//                focusedLabelColor = MaterialTheme.colorScheme.secondary
+//            )
+//        )
+//
+//        ExposedDropdownMenu(
+//            expanded = expanded,
+//            onDismissRequest = { expanded = false }
+//        ) {
+//            sanitizedOptions.forEach { option ->
+//                DropdownMenuItem(
+//                    onClick = {
+//                        val isSelected = selectedStates[option] ?: false
+//                        selectedStates[option] = !isSelected
+//                        onSelectionChange(selectedStates.filterValues { it }.keys.toList())
+//                    }
+//                ) {
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Checkbox(
+//                            checked = selectedStates[option] ?: false,
+//                            onCheckedChange = null
+//                        )
+//                        Spacer(modifier = Modifier.width(8.dp))
+//                        Text(text = option.collegeName ?: "Unnamed College")
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}

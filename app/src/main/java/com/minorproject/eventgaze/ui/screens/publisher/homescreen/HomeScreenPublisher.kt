@@ -5,14 +5,18 @@ package com.minorproject.eventgaze.ui.screens.publisher.homescreen
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.EventNote
+import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -86,10 +90,11 @@ fun HomeScreenContentPublisher(animatedVisibilityScope: AnimatedVisibilityScope,
             ),
             title = {   Text(text = stringResource(R.string.publishedevents),
                 style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.secondary,) },
-//            actions = { Icon(imageVector = Icons.Default.PersonOutline, tint = MaterialTheme.colorScheme.secondary,
-//                modifier = modifier.size(35.dp).weight(1f)
-//                    .clickable(onClick = { viewModel.onProfileClick(navigate)}),contentDescription = null)
-//            }
+            actions = { Icon(imageVector = Icons.Default.AccountCircle, tint = MaterialTheme.colorScheme.secondary,
+                modifier = modifier.size(30.dp)
+                    .clickable(onClick = { viewModel.onProfileClick(navigate)})
+                ,contentDescription = null)
+            }
         )
     },
         floatingActionButton = {
@@ -150,11 +155,11 @@ fun EventList(
         )   {
             ItemCard(
                 id = event.eventId,
-                image = event.eventArt,
-                title = event.eventName,
-                des = event.eventDescription,
+                image = event.eventArt ?: "",
+                title = event.eventName ?: "",
+                des = event.eventDescription ?: "",
                 modifier = Modifier,
-                publishername = event.college.size.toString(),
+                publishername = event.publisher?.publisherOrgName ?: "",
                 onShareClick = { onShareClick(event) },
                 onItemClick = { onItemClick(event) },
                 animatedVisibilityScope = animatedVisibilityScope,

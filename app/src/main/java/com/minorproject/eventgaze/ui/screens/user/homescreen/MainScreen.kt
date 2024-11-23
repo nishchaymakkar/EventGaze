@@ -40,6 +40,7 @@ import dev.chrisbanes.haze.HazeState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -54,6 +55,7 @@ fun SharedTransitionScope.MainScreen(
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val context = LocalContext.current
+    val collegeOptions by viewModel.collegeOptions.collectAsState()
     val selectedItemIndex = viewModel.selectedItemIndex
    val hazeState = remember { HazeState() }
     val onShareClick: (Event) -> Unit = { event ->
@@ -66,8 +68,8 @@ fun SharedTransitionScope.MainScreen(
         modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary).fillMaxSize(),
         topBar = {
             TopAppBar(title = { when(selectedItemIndex){
-                0 -> Text(text = "Discover", style = MaterialTheme.typography.headlineSmall)
-                1 -> Text(text = "Colleges", style = MaterialTheme.typography.headlineSmall)
+                0 -> Text(text = "Discover", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
+                1 -> Text(text = "Colleges", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
                 2 -> Text(text = "", style = MaterialTheme.typography.headlineSmall)
             } }, colors = TopAppBarColors(containerColor = MaterialTheme.colorScheme.onPrimary,
                 scrolledContainerColor = Color.Transparent,
@@ -82,18 +84,18 @@ fun SharedTransitionScope.MainScreen(
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
                         colors = NavigationBarItemColors(
-                            selectedIconColor = MaterialTheme.colorScheme.secondary,
-                            unselectedIconColor =MaterialTheme.colorScheme.secondary,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor =MaterialTheme.colorScheme.secondary.copy(.6f),
                             disabledTextColor = MaterialTheme.colorScheme.secondary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             unselectedTextColor = MaterialTheme.colorScheme.secondary,
                             disabledIconColor = MaterialTheme.colorScheme.secondary,
-                            selectedIndicatorColor = MaterialTheme.colorScheme.primary
+                            selectedIndicatorColor = Color.Transparent
                         ),
                         selected = selectedItemIndex == index,
                         onClick = { viewModel.onBottomNavItemClick(index)},
                         label = {
-                           Text(text = item.title, fontWeight = FontWeight.ExtraBold)
+                           //Text(text = item.title, fontWeight = FontWeight.ExtraBold)
                         },
                         icon = {
                             Icon(
@@ -112,7 +114,7 @@ fun SharedTransitionScope.MainScreen(
         Column(
             Modifier
                 .padding(it).fillMaxSize()
-                .background(Color.Transparent),
+                .background(MaterialTheme.colorScheme.onPrimary),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -159,6 +161,7 @@ fun SharedTransitionScope.MainScreen(
                     onCollegeClick = { college, _ ->
                         viewModel.onCollegeClick(college, navigate)
                     },
+                    colleges = collegeOptions,
                     animatedVisibilityScope = animatedVisibilityScope
                 )
                 2 -> {

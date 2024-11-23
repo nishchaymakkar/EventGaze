@@ -26,7 +26,7 @@ fun BasicButton(@StringRes text: Int, modifier: Modifier, action: () -> Unit) {
     shape = MaterialTheme.shapes.large,
     contentPadding = PaddingValues(15.dp)
   ) {
-    Text(text = stringResource(text), textAlign = TextAlign.Center, maxLines = 1 )
+    Text(text = stringResource(text), textAlign = TextAlign.Center, maxLines = 1 , color = MaterialTheme.colorScheme.secondary)
   }
 }
 

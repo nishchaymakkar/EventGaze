@@ -6,9 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -81,7 +78,7 @@ fun DetailScreen(
         Column(Modifier.fillMaxSize()) {
             if (event != null) {
 
-                SharedTransitionLayout {
+
 
                     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -157,7 +154,7 @@ fun DetailScreen(
                                 Spacer(modifier.width(10.dp))
                                 if (event != null) {
                                     Text(
-                                        text = event.eventDescription,
+                                        text = event.eventVenue ?: "unexpected location",
                                         color = MaterialTheme.colorScheme.secondary,
                                         style = MaterialTheme.typography.bodyMedium,
                                         textAlign = TextAlign.Justify
@@ -207,22 +204,32 @@ fun DetailScreen(
                                     .fillMaxWidth(),
                             ) {
 
-                                Image(
-                                        painter = painterResource(R.drawable.img),
-                                        contentDescription = null,
-                                        modifier = Modifier.sharedElement(
-                                            state = rememberSharedContentState(key = event),
-                                            animatedVisibilityScope = animatedVisibilityScope,
-                                            boundsTransform = { _, _ -> tween(durationMillis = 1000) }
-                                        ),
-                                        contentScale = ContentScale.Fit
-                                    )
-                                    Text(
-                                        text ="",
-                                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
+//                                AsyncImage( model = ImageRequest.Builder(LocalContext.current)
+//                                    .data(event.publisher.publisherImage ?: "")
+//                                    .crossfade(true)
+//                                    .dispatcher(dispatcher = Dispatchers.IO) // Enable caching
+//                                    .build(),
+//                                    placeholder = painterResource(R.drawable.loading_img),
+//                                    error = painterResource(R.drawable.ic_connection_error),
+//                                    contentDescription = null,
+//                                    contentScale = ContentScale.Crop,
+//                                    )
+                                if (event.publisher == null) {
+                                    Text("Publisher data is unavailable.")
+                                } else {
+                                    val publishers = event.publisher
+                                    if (publishers != null) {
+                                        Text(
+                                            text = event.publisher.publisherOrgName ?: "unknown value",
+                                            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                    } else {
+                                        Text("No publishers available.")
+                                    }
+                                }
+
 
                             }
 
@@ -243,7 +250,7 @@ fun DetailScreen(
                         }
 
 
-                    }
+
 
                 }
             } else {

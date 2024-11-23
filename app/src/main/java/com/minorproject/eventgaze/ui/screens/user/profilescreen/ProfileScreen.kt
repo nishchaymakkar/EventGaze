@@ -61,9 +61,8 @@ fun ProfileScreen(
 ){
     Column (
         modifier = modifier
-            .fillMaxSize().padding(top = 40.dp)
-          //  .background(color = MaterialTheme.colorScheme.onPrimary),
-        ,horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize().background(color = MaterialTheme.colorScheme.onPrimary),
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
         Row(
             modifier = modifier

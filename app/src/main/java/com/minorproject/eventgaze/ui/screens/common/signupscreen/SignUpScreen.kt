@@ -365,7 +365,7 @@ fun DropdownCollegeTextField(
             shape = RoundedCornerShape(16.dp),
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = MaterialTheme.colorScheme.onPrimary.copy(.4f),
+            containerColor = MaterialTheme.colorScheme.onPrimary,
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

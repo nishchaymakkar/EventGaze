@@ -69,8 +69,8 @@ fun ComplexGradientBackground() {
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFF00FF00).copy(alpha = 0.4f), // Bright green
-                                Color(0xFF003300).copy(alpha = 0.2f), // Darker green
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), // Bright green
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), // Darker green
                                 Color.Transparent // Fades to transparent
                             ),
                             radius = circle.size.value * 2

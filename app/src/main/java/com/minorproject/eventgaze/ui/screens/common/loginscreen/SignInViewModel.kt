@@ -1,7 +1,13 @@
 package com.minorproject.eventgaze.ui.screens.common.loginscreen
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.minorproject.eventgaze.HomeScreenP
@@ -13,11 +19,14 @@ import com.minorproject.eventgaze.modal.User
 import com.minorproject.eventgaze.modal.data.Login
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.modal.data.isValidEmail
+import com.minorproject.eventgaze.modal.datastore.PreferencesRepository
 import com.minorproject.eventgaze.ui.common.components.SnackbarManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.prefs.Preferences
 import javax.inject.Inject
 
 const val GOOGLE_SIGN_IN_REQUEST_CODE = 200
@@ -25,15 +34,20 @@ const val GOOGLE_SIGN_IN_REQUEST_CODE = 200
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
+   @ApplicationContext private val context: Context,
+   private val preferencesRepository: PreferencesRepository,
    private val eventRepository: EventRepository
 ) : ViewModel() {
     var uiState = mutableStateOf(SignInState())
         private set
 
+
     private val email
         get() = uiState.value.email
     private val password
         get() = uiState.value.password
+
+
 
 
     private val _loginState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
@@ -66,6 +80,7 @@ class SignInViewModel @Inject constructor(
                 val loginResponse = result.getOrNull()
                 if (loginResponse != null) {
                     _loginState.value = LoginUiState.Success(loginResponse)
+                    saveLoginData(loginResponse)
 
                     if (loginResponse.userRole == "STUDENT") {
                         openAndPopUp(MainScreen, SignInScreen)
@@ -83,7 +98,11 @@ class SignInViewModel @Inject constructor(
         }
 
     }
-
+    fun saveLoginData(login: Login) {
+        viewModelScope.launch {
+            preferencesRepository.saveSessionToken(login.sessionToken,login.userRole)
+        }
+    }
 
     //    fun onForgotPasswordClick() {
 //        if (!email.isValidEmail()) {
@@ -116,9 +135,6 @@ class SignInViewModel @Inject constructor(
 //            }
 //        }
 //    }
-    val sessionToaken by mutableStateOf("")
-    val userRole by mutableStateOf("Student")
-    val userId by mutableStateOf(0L)
 
 }
 

@@ -11,5 +11,5 @@ data class Publishers(
     @SerialName("publisher_img")
     val publisherImage: String,
     @SerialName("publisher_org_name")
-    val publisherOrgName: String
+    val publisherOrgName: String? = null
 )

@@ -10,6 +10,11 @@ import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.modal.data.Login
 import com.minorproject.eventgaze.modal.data.PublisherSignUp
 import com.minorproject.eventgaze.modal.data.StudentSignUp
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -19,26 +24,33 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.7:8080/eventgaze/"
-private val gson = GsonBuilder()
-    .setLenient()
-    .create()
-private val logging = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
-private val client = OkHttpClient.Builder().addInterceptor(logging).build()
+private const val BASE_URL = "http://192.168.1.3:8080/eventgaze/"
 
 
+val retrofit: Retrofit by lazy {
+    Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(
+            OkHttpClient.Builder()
+                .addInterceptor(AuthInterceptor())
+                .addInterceptor(HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                })
+                .build()
+        )
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+}
 
-private val retrofit = Retrofit.Builder()
-    .baseUrl(BASE_URL)
-    .addConverterFactory(GsonConverterFactory.create(gson))
-   .client(client)
-    .build()
 object LoginApi{
     val retrofitService: LoginApiService by lazy {
         retrofit.create(LoginApiService::class.java)
@@ -87,8 +99,9 @@ interface EventApiService {
     @GET("events/getAll")
     suspend fun getEvents(): List<Event>
 
-    @GET("events/id/{myId}")
+    @GET("events/eventId/id/{myId}")
     suspend fun getEventById(@Path("myId") eventId: String?): Event
+
 
     @Multipart
     @POST("events/create")
@@ -103,3 +116,38 @@ interface EventApiService {
     ): Response<Void>
 
 }
+
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(): AuthInterceptor {
+        return AuthInterceptor()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+}
+

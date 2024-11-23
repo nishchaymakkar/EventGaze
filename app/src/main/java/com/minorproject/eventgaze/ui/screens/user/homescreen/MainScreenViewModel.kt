@@ -1,6 +1,8 @@
 package com.minorproject.eventgaze.ui.screens.user.homescreen
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,15 +40,19 @@ class MainScreenViewModel @Inject constructor(
     var eventUiState: EventUiState by mutableStateOf(EventUiState.Loading)
         private set
     var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
-
+    var collegeUiState: CollegeUiState by mutableStateOf(CollegeUiState.Loading)
+        private set
     init {
         getEvents()
         getCategory()
-
+        getCollegeList()
     }
+    private val _collegeOptions = MutableStateFlow<List<College>>(emptyList())
+    val collegeOptions : StateFlow<List<College>> = _collegeOptions
+
     fun getShareableLink(event: Event): String {
         val baseUrl = "http://192.168.1.5:8080"
-        val eventLink = "$baseUrl/events/id/${event.eventId}"
+        val eventLink = "$baseUrl/events/eventId/id/${event.eventId}"
         return eventLink
     }
 
@@ -147,6 +153,21 @@ class MainScreenViewModel @Inject constructor(
 
 
     }
+    fun getCollegeList() {
+        viewModelScope.launch {
 
+            withContext(Dispatchers.IO){
+                collegeUiState = CollegeUiState.Loading
+
+                val result = eventRepository.fetchCollegeList()
+                if (result.isSuccess) {
+                    _collegeOptions.value = result.getOrNull().orEmpty()
+                } else {
+                    // Handle the error case, e.g., log the error or show a message
+                    result.exceptionOrNull()?.printStackTrace()
+                }
+            }
+        }
+    }
 
 }

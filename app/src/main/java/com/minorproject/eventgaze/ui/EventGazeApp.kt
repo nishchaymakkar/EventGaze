@@ -11,6 +11,7 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Surface
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -126,6 +127,7 @@ val context = LocalContext.current
                 }
             }
         }
+       Surface (color = MaterialTheme.colorScheme.onPrimary) {
             Scaffold(
                 modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
                 snackbarHost = {
@@ -148,21 +150,32 @@ val context = LocalContext.current
                         navController = appState.navController,
                         startDestination = SplashScreen,
                     ) {
-                        composable(SplashScreen){
-                            SplashScreen(openAndPopUp = {route, popUp -> appState.navigateAndPopUp(route, popUp)})
+                        composable(SplashScreen) {
+                            SplashScreen(openAndPopUp = { route, popUp ->
+                                appState.navigateAndPopUp(
+                                    route,
+                                    popUp
+                                )
+                            })
                         }
-                        composable(SignInScreen){
-                            SignInScreen(openAndPopUp = {route,popUp -> appState.navigateAndPopUp(route, popUp)},
-                                navigate = {route -> appState.navigate(route)})
+                        composable(SignInScreen) {
+                            SignInScreen(openAndPopUp = { route, popUp ->
+                                appState.navigateAndPopUp(
+                                    route,
+                                    popUp
+                                )
+                            },
+                                navigate = { route -> appState.navigate(route) })
                         }
-                        composable(SignUpScreen){
-                            SignUpScreen(navigate = {route -> appState.clearAndNavigate(route)},
-                                popUp = {  appState.popUp()})
+                        composable(SignUpScreen) {
+                            SignUpScreen(navigate = { route -> appState.clearAndNavigate(route) },
+                                popUp = { appState.popUp() })
                         }
 
-                        composable(MainScreen){
-                            MainScreen(navigate = {route -> appState.navigate(route)},
-                                restartApp = {route -> appState.clearAndNavigate(route)},
+                        composable(MainScreen) {
+                            MainScreen(
+                                navigate = { route -> appState.navigate(route) },
+                                restartApp = { route -> appState.clearAndNavigate(route) },
                                 animatedVisibilityScope = this@composable,
                                 eventUiState = eventViewModel.eventUiState,
                                 retryAction = eventViewModel::getEvents,
@@ -170,60 +183,93 @@ val context = LocalContext.current
                             )
 
                         }
-                        composable("$DetailScreen/{eventJson}",
-                           arguments = listOf(navArgument("eventJson"){type = NavType.StringType})
+                        composable(
+                            "$DetailScreen/{eventJson}",
+                            arguments = listOf(navArgument("eventJson") {
+                                type = NavType.StringType
+                            })
                         )
-                        {backStackEntry ->
+                        { backStackEntry ->
 
                             val eventJson = backStackEntry.arguments?.getString("eventJson")
                             val event = eventJson?.let { json ->
-                                java.net.URLDecoder.decode(json,"UTF-8")
-                                    .let { decodeJson -> Gson().fromJson(decodeJson, Event::class.java) }
+                                java.net.URLDecoder.decode(json, "UTF-8")
+                                    .let { decodeJson ->
+                                        Gson().fromJson(
+                                            decodeJson,
+                                            Event::class.java
+                                        )
+                                    }
                             }
-                            if (event != null ) {
+                            if (event != null) {
                                 DetailScreen(
                                     animatedVisibilityScope = this@composable,
                                     event = event,
-                                    popUp = {appState.popUp()}
+                                    popUp = { appState.popUp() }
                                 )
                             }
                         }
-                        composable("$CollegeEventScreen/{college}",
-                            arguments = listOf(navArgument("college"){type = NavType.StringType})
+                        composable(
+                            "$CollegeEventScreen/{college}",
+                            arguments = listOf(navArgument("college") { type = NavType.StringType })
                         ) { backStackEntry ->
                             val collegeJson = backStackEntry.arguments?.getString("college")
                             val college = collegeJson?.let { json ->
-                                java.net.URLDecoder.decode(json,"UTF-8")
-                                    .let { decodeJson -> Gson().fromJson(decodeJson, College::class.java) }
+                                java.net.URLDecoder.decode(json, "UTF-8")
+                                    .let { decodeJson ->
+                                        Gson().fromJson(
+                                            decodeJson,
+                                            College::class.java
+                                        )
+                                    }
                             }
 
                             if (college != null) {
-                                CollegeEventScreen(college = college, detailnavigate = {route -> appState.navigate(route)}, animatedVisibilityScope = this)
+                                CollegeEventScreen(
+                                    college = college,
+                                    detailnavigate = { route -> appState.navigate(route) },
+                                    eventUiState = eventViewModel.eventUiState,
+                                    animatedVisibilityScope = this
+                                )
                             }
                         }
                         composable(HomeScreenP) {
-                            HomeScreen(navigate = {route -> appState.navigate(route)},
-                                eventUiState = eventViewModel.eventUiState, retryAction = eventViewModel::getEvents, animatedVisibilityScope = this@composable)
+                            HomeScreen(
+                                navigate = { route -> appState.navigate(route) },
+                                eventUiState = eventViewModel.eventUiState,
+                                retryAction = eventViewModel::getEvents,
+                                animatedVisibilityScope = this@composable
+                            )
                         }
                         composable(ProfileScreenP) {
                             ProfileScreen()
                         }
                         composable(PiScreen) {
-                            PiScreen(popUp = { appState.popUp()})
+                            PiScreen(popUp = { appState.popUp() })
                         }
-                        composable(AddEventScreen){
-                            AddEventScreen(popUp = {appState.popUp()}, retry = eventViewModel::getEvents)
+                        composable(AddEventScreen) {
+                            AddEventScreen(
+                                popUp = { appState.popUp() },
+                                retry = eventViewModel::getEvents
+                            )
                         }
-                        composable("$DetailScreenForLinks/{eventId}", arguments = listOf(navArgument("eventId"){type = NavType.StringType}),
-                            deepLinks = listOf(navDeepLink { uriPattern = "http://192.168.1.5:8080/events/id/{eventId}" }) ) { backStackEntry ->
+                        composable("$DetailScreenForLinks/{eventId}",
+                            arguments = listOf(navArgument("eventId") {
+                                type = NavType.StringType
+                            }),
+                            deepLinks = listOf(navDeepLink {
+                                uriPattern = "http://192.168.1.5:8080/events/eventId/id/{eventId}"
+                            })
+                        ) { backStackEntry ->
                             val eventId = backStackEntry.arguments?.getString("eventId")
                             DetailScreenForLinks(
-                                eventId =  eventId,
-                                popUp = { appState.popUp()}
+                                eventId = eventId,
+                                popUp = { appState.popUp() }
                             )
                         }
                     }
                 }
             }
+        }
         }
     }
