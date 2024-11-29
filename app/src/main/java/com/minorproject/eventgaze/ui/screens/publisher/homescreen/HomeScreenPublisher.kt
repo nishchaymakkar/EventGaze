@@ -16,7 +16,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.EventNote
-import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -159,7 +158,7 @@ fun EventList(
                 title = event.eventName ?: "",
                 des = event.eventDescription ?: "",
                 modifier = Modifier,
-                publishername = event.publisher?.publisherOrgName ?: "",
+                publishername = event.publishers?.publisherOrgName ?: "",
                 onShareClick = { onShareClick(event) },
                 onItemClick = { onItemClick(event) },
                 animatedVisibilityScope = animatedVisibilityScope,

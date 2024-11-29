@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Publishers(
+data class Publisher(
     @SerialName("publisher_id")
     val publisherId: Long,
     @SerialName("publisher_img")

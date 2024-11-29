@@ -10,13 +10,10 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -46,7 +43,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,7 +56,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -82,7 +77,7 @@ import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
-import com.minorproject.eventgaze.modal.data.Publishers
+import com.minorproject.eventgaze.modal.data.Publisher
 import com.minorproject.eventgaze.ui.screens.user.colleges_screen.isColorTooLight
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import dev.chrisbanes.haze.HazeState
@@ -100,7 +95,7 @@ fun HomeScreenContentPreview() {
     eventName =    "Event Title",
     eventDescription = "This is a sample description of the event. This is a sample description of the event." +
             "This is a sample description of the event. This is a sample description of the event. This is a sample description of the event.",
-publisher= Publishers(publisherId = 1L,"","") ,
+publishers= Publisher(publisherId = 1L,"","") ,
        eventTags = "sldlkd, odldl",
        college =  College("IIT Selampur",1L,""),
        eventArt = "dlldfl",
@@ -127,6 +122,7 @@ publisher= Publishers(publisherId = 1L,"","") ,
 
 @Composable
 fun HomeScreenContent(
+
     event: List<Event>,
     category: List<EventCategory>,
     modifier: Modifier = Modifier,
@@ -171,9 +167,6 @@ fun HomeScreenContent(
         ) {
 
 
-          Column(modifier = modifier
-              .align(Alignment.BottomCenter).padding()
-              .fillMaxWidth().background(Color.Transparent)) {
 //              Spacer(
 //                  modifier
 //                      .fillMaxWidth()
@@ -186,9 +179,9 @@ fun HomeScreenContent(
                    onItemClick = onItemClick,
                    onShareClick = onShareClick,
                    animatedVisibilityScope = animatedVisibilityScope,
-                   modifier = Modifier,
+                   modifier = Modifier.align(Alignment.BottomCenter),
                    )
-                      }
+
 
            CategoryRow(categories = category, selectedCategoryId =  selectedCategoryId, onCategorySelected = {selectedCategoryId = it},modifier= modifier.align(Alignment.TopStart))
 
@@ -283,7 +276,7 @@ fun EventList(
             val event = events[page]
             val scaleAndAlpha = calculateScaleAndAlpha(page, pagerState)
          Box(
-             modifier = modifier.fillMaxSize().padding(top = 48.dp)
+             modifier = modifier.fillMaxSize().padding(top = 50.dp)
          )   {
                 ItemCard(
                     id = event.eventId,

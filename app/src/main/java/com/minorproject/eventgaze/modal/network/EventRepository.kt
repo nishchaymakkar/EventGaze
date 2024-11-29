@@ -15,6 +15,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -29,8 +30,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 class EventRepository @Inject constructor(
-    private val authInterceptor: AuthInterceptor
+  private val authInterceptor: AuthInterceptor
 ) {
+    @Volatile
+    private var token: String? = null
     suspend fun fetchCategory(): Result<List<EventCategory>> {
         return try {
             val categories = CategoryApi.retrofitService.getCategory()
@@ -46,7 +49,7 @@ class EventRepository @Inject constructor(
 
     suspend fun fetchEvents(): Result<List<Event>> {
         return try {
-            val events = EventApi.retrofitService.getEvents()
+            val events = NetworkModule.retrofitService.getEvents()
             Result.success(events)
         } catch (e: IOException) {
             Result.failure(e)
@@ -104,7 +107,7 @@ class EventRepository @Inject constructor(
 
     suspend fun fetEventById(eventId: String?): Result<Event>{
        return try {
-           val event = EventApi.retrofitService.getEventById(eventId)
+           val event = NetworkModule.retrofitService.getEventById(eventId)
            Result.success(event)
        } catch (e: Exception ){
            Result.failure(e)
@@ -137,9 +140,11 @@ class EventRepository @Inject constructor(
                 DateTimeFormatter.ofPattern("dd-MM-yyyy")))
             val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeName)
             val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
+            val publishers = RequestBody.create("text/plain".toMediaTypeOrNull(), event.publishers?.publisherId.toString())
 
-            val response = EventApi.retrofitService.createEvent(
-            eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, filePart
+            val response = NetworkModule.retrofitService.createEvent(
+            eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, publishers,
+                 filePart
             )
 
 //
@@ -173,10 +178,12 @@ class EventRepository @Inject constructor(
         }
     }
     //get the session token from viewModel and update the authInterceptor
-    fun updateToken(token: String) {
-        authInterceptor.authToken = token
-        Log.d("AuthInterceptor", "Token updated: $token")
-    }
+//    fun updateToken(newToken: String) {
+//        token = newToken
+//       // Log.d("AuthInterceptor", "Token updated: $token")
+//    }
+
+
 
 }
 @Module

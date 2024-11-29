@@ -19,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import com.minorproject.eventgaze.SplashScreen
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
+import com.minorproject.eventgaze.modal.datastore.PreferencesRepository
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.EventGazeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +32,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
-
+    private val preferencesRepository: PreferencesRepository,
     private val eventRepository: EventRepository
 ): ViewModel(){
 
@@ -61,7 +62,10 @@ class MainScreenViewModel @Inject constructor(
     }
 
     fun onSignOutClick(restartApp: (String) -> Unit) {
-
+        viewModelScope.launch {
+            preferencesRepository.clearPreferences()
+            restartApp(SplashScreen)
+        }
 
     }
     private val _userName = MutableStateFlow<String?>(null)

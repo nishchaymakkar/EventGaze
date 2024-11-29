@@ -214,13 +214,13 @@ fun DetailScreen(
 //                                    contentDescription = null,
 //                                    contentScale = ContentScale.Crop,
 //                                    )
-                                if (event.publisher == null) {
+                                if (event.publishers == null) {
                                     Text("Publisher data is unavailable.")
                                 } else {
-                                    val publishers = event.publisher
+                                    val publishers = event.publishers
                                     if (publishers != null) {
                                         Text(
-                                            text = event.publisher.publisherOrgName ?: "unknown value",
+                                            text = event.publishers.publisherOrgName ?: "unknown value",
                                             modifier = Modifier.padding(start = 8.dp, end = 8.dp),
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.secondary

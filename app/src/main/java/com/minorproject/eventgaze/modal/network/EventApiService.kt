@@ -2,6 +2,8 @@ package com.minorproject.eventgaze.modal.network
 
 
 
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import com.google.gson.GsonBuilder
 import com.minorproject.eventgaze.modal.User
 import com.minorproject.eventgaze.modal.data.College
@@ -10,6 +12,7 @@ import com.minorproject.eventgaze.modal.data.EventCategory
 import com.minorproject.eventgaze.modal.data.Login
 import com.minorproject.eventgaze.modal.data.PublisherSignUp
 import com.minorproject.eventgaze.modal.data.StudentSignUp
+import com.minorproject.eventgaze.modal.datastore.PreferencesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,7 +36,7 @@ import retrofit2.http.Path
 import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.3:8080/eventgaze/"
+private const val BASE_URL = "http://192.168.1.2:8080/eventgaze/"
 
 
 val retrofit: Retrofit by lazy {
@@ -41,12 +44,12 @@ val retrofit: Retrofit by lazy {
         .baseUrl(BASE_URL)
         .client(
             OkHttpClient.Builder()
-                .addInterceptor(AuthInterceptor())
                 .addInterceptor(HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.BODY
                 })
                 .build()
         )
+
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 }
@@ -67,11 +70,7 @@ object CollegeApi{
     }
 }
 
-object EventApi {
-    val retrofitService: EventApiService by lazy {
-        retrofit.create(EventApiService::class.java)
-    }
-}
+
 interface CategoryApiService{
     @GET("category/getAll")
     suspend fun getCategory(): List<EventCategory>
@@ -95,7 +94,6 @@ interface LoginApiService{
 }
 interface EventApiService {
 
-
     @GET("events/getAll")
     suspend fun getEvents(): List<Event>
 
@@ -112,8 +110,10 @@ interface EventApiService {
         @Part("eventDate") eventDate: RequestBody,
         @Part("eventScope") eventScope: RequestBody,
         @Part("eventTags") eventTags: RequestBody,
+        @Part("publisherId") publisherId: RequestBody,
+      //  @Part event: Event,
         @Part eventArt: MultipartBody.Part
-    ): Response<Void>
+    ): Response<Unit>
 
 }
 
@@ -122,17 +122,18 @@ interface EventApiService {
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+
     @Provides
     @Singleton
-    fun provideAuthInterceptor(): AuthInterceptor {
-        return AuthInterceptor()
+    fun provideAuthInterceptor(preferencesRepository: PreferencesRepository): AuthInterceptor {
+        return AuthInterceptor(preferencesRepository)
     }
 
     @Provides
     @Singleton
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
+           .addInterceptor(authInterceptor)
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
@@ -147,6 +148,9 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+    val retrofitService: EventApiService by lazy {
+        retrofit.create(EventApiService::class.java)
     }
 
 }

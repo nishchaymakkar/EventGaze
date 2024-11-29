@@ -2,8 +2,6 @@ package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
-import com.minorproject.eventgaze.modal.data.Publishers
+import com.minorproject.eventgaze.modal.data.Publisher
 import com.minorproject.eventgaze.modal.datastore.PreferencesRepository
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CategoryUiState
@@ -116,7 +114,7 @@ private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiStat
                 eventTags = eventTags,
                 college = college,
                 eventCategory = eventCategory,
-                publisher =  Publishers(publisherId = 1L,"",""),
+                publishers =  Publisher(publisherId = 1L,"",""),
                 eventVenue = ""
 
             )
@@ -129,7 +127,7 @@ private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiStat
                 val token = preferencesRepository.sessionToken.firstOrNull()
                 if (token != null) {
                   //send the session token to the eventRepository
-                    eventRepository.updateToken(token)
+                   // eventRepository.updateToken(token)
                 }
 
                 if (result.isSuccess) {

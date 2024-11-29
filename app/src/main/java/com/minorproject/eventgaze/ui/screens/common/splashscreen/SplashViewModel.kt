@@ -26,6 +26,12 @@ class SplashViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel(){
+
+    init {
+        viewModelScope.launch {
+            preferencesRepository.preloadSessionToken()
+        }
+    }
     val sessionToken: Flow<String?> = preferencesRepository.sessionToken
     val userRole: Flow<String?> = preferencesRepository.userRole
 

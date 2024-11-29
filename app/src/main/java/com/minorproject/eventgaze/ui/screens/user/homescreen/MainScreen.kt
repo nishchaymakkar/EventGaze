@@ -1,5 +1,6 @@
 package com.minorproject.eventgaze.ui.screens.user.homescreen
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -9,8 +10,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Surface
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,9 +43,11 @@ import dev.chrisbanes.haze.HazeState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SharedTransitionScope.MainScreen(
@@ -64,117 +69,147 @@ fun SharedTransitionScope.MainScreen(
       shareEvent(context,shareLink)
     }
 
-    Scaffold(
-        modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary).fillMaxSize(),
-        topBar = {
-            TopAppBar(title = { when(selectedItemIndex){
-                0 -> Text(text = "Discover", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
-                1 -> Text(text = "Colleges", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.SemiBold)
-                2 -> Text(text = "", style = MaterialTheme.typography.headlineSmall)
-            } }, colors = TopAppBarColors(containerColor = MaterialTheme.colorScheme.onPrimary,
-                scrolledContainerColor = Color.Transparent,
-                navigationIconContentColor = Color.Transparent,
-                titleContentColor = MaterialTheme.colorScheme.secondary,
-                actionIconContentColor = Color.Unspecified
-            )
-            )
-        },
-        bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.onPrimary) {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        colors = NavigationBarItemColors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor =MaterialTheme.colorScheme.secondary.copy(.6f),
-                            disabledTextColor = MaterialTheme.colorScheme.secondary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            unselectedTextColor = MaterialTheme.colorScheme.secondary,
-                            disabledIconColor = MaterialTheme.colorScheme.secondary,
-                            selectedIndicatorColor = Color.Transparent
-                        ),
-                        selected = selectedItemIndex == index,
-                        onClick = { viewModel.onBottomNavItemClick(index)},
-                        label = {
-                           //Text(text = item.title, fontWeight = FontWeight.ExtraBold)
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = if (index == selectedItemIndex) {
-                                    item.selectedIcon
-                                } else item.unselectedIcon,
-                                contentDescription = null
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+   Surface(modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary)) {
+        Scaffold(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.onPrimary)
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        when (selectedItemIndex) {
+                            0 -> Text(
+                                text = "Discover",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.SemiBold
                             )
+
+                            1 -> Text(
+                                text = "Colleges",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            2 -> Text(text = "", style = MaterialTheme.typography.headlineSmall)
                         }
-                    )
-                }}
+                    }, colors = TopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.onPrimary,
+                        scrolledContainerColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = Color.Transparent,
+                        titleContentColor = MaterialTheme.colorScheme.secondary,
+                        actionIconContentColor = Color.Unspecified
+                    ), scrollBehavior = scrollBehavior
+                )
+            },
+            bottomBar = {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.height(64.dp)) {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            colors = NavigationBarItemColors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.secondary.copy(.6f),
+                                disabledTextColor = MaterialTheme.colorScheme.secondary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedTextColor = MaterialTheme.colorScheme.secondary,
+                                disabledIconColor = MaterialTheme.colorScheme.secondary,
+                                selectedIndicatorColor = Color.Transparent
+                            ),
+                            selected = selectedItemIndex == index,
+                            onClick = { viewModel.onBottomNavItemClick(index) },
+                            label = {
+                                //Text(text = item.title, fontWeight = FontWeight.ExtraBold)
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = if (index == selectedItemIndex) {
+                                        item.selectedIcon
+                                    } else item.unselectedIcon,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
+                }
 
-        }
-    ) { it ->
-
-        Column(
-            Modifier
-                .padding(it).fillMaxSize()
-                .background(MaterialTheme.colorScheme.onPrimary),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            when (selectedItemIndex) {
-                0 -> {
-                    when (eventUiState){
-                        is EventUiState.Loading -> CircularProgressIndicator()
-                        is EventUiState.Error -> {
-                            println("Error: ${eventUiState.error}")
-                            ErrorScreen(retryAction = retryAction, modifier = Modifier.fillMaxSize())
-                        }
-                        is EventUiState.Success -> {
-                            when( categoryUiState){
-                                is CategoryUiState.Loading -> ShimmerListItem(isLoading = true)
-                                is CategoryUiState.Error -> {
-                                    println("Error: ${categoryUiState.error}")
-                                    ErrorScreen(retryAction = retryAction, modifier = Modifier.fillMaxSize())
-                                }
-                                is CategoryUiState.Success -> {
-                                    HomeScreenContent(
-
-                                        event = eventUiState.event,
-                                        onItemClick = { event->
-                                            viewModel.onItemClick(event, navigate)
-                                        },
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        onShareClick = onShareClick,
-                                        refresh = retryAction,
-                                        category = categoryUiState.category,
-                                        modifier = Modifier.padding(),
-                                        isloading = false
+            },
+            content = { it ->
+                Column(
+                    Modifier
+                        .padding(it)
+                        .background(MaterialTheme.colorScheme.onPrimary),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    when (selectedItemIndex) {
+                        0 -> {
+                            when (eventUiState) {
+                                is EventUiState.Loading -> CircularProgressIndicator()
+                                is EventUiState.Error -> {
+                                    println("Error: ${eventUiState.error}")
+                                    ErrorScreen(
+                                        retryAction = retryAction,
+                                        modifier = Modifier.fillMaxSize()
                                     )
+                                }
+
+                                is EventUiState.Success -> {
+                                    when (categoryUiState) {
+                                        is CategoryUiState.Loading -> ShimmerListItem(isLoading = true)
+                                        is CategoryUiState.Error -> {
+                                            println("Error: ${categoryUiState.error}")
+                                            ErrorScreen(
+                                                retryAction = retryAction,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
+
+                                        is CategoryUiState.Success -> {
+                                            HomeScreenContent(
+                                                event = eventUiState.event,
+                                                onItemClick = { event ->
+                                                    viewModel.onItemClick(event, navigate)
+                                                },
+                                                animatedVisibilityScope = animatedVisibilityScope,
+                                                onShareClick = onShareClick,
+                                                refresh = retryAction,
+                                                category = categoryUiState.category,
+                                                modifier = Modifier.padding(),
+                                                isloading = false
+                                            )
+                                        }
+                                    }
+
+
                                 }
                             }
 
+                        }
 
+                        1 -> CollegesScreen(
 
+                            onCollegeClick = { college, _ ->
+                                viewModel.onCollegeClick(college, navigate)
+                            },
+                            colleges = collegeOptions,
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+
+                        2 -> {
+                            val username by viewModel.userName.collectAsState()
+                            ProfileScreen(
+                                onSignOutClick = {
+                                    viewModel.onSignOutClick(restartApp)
+                                },
+                                username = username,
+                                onPiClick = { viewModel.onPiClick(navigate) }
+                            )
                         }
                     }
-
-                }
-                1 -> CollegesScreen(
-
-                    onCollegeClick = { college, _ ->
-                        viewModel.onCollegeClick(college, navigate)
-                    },
-                    colleges = collegeOptions,
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
-                2 -> {
-                    val username by viewModel.userName.collectAsState()
-                    ProfileScreen(
-                        onSignOutClick = {
-                            viewModel.onSignOutClick(restartApp) },
-                        username = username,
-                        onPiClick = {viewModel.onPiClick(navigate)}
-                    )
                 }
             }
-        }
+        )
     }
 }
 
