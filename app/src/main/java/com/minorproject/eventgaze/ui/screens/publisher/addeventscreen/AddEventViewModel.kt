@@ -1,6 +1,7 @@
 package com.minorproject.eventgaze.ui.screens.publisher.addeventscreen
 
 import android.content.Context
+import android.icu.text.DateFormat
 import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -11,9 +12,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.minorproject.eventgaze.modal.data.College
-import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
-import com.minorproject.eventgaze.modal.data.Publisher
+import com.minorproject.eventgaze.modal.data.EventRequestDto
 import com.minorproject.eventgaze.modal.datastore.PreferencesRepository
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.screens.user.homescreen.CategoryUiState
@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 
@@ -53,7 +55,7 @@ class AddEventViewModel @Inject constructor(
 
 private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
     val sessionToken: Flow<String?> = preferencesRepository.sessionToken
-
+    val userId: Flow<Long?> = preferencesRepository.userId
 
     private val eventName
         get() = uiState.value.eventName
@@ -104,19 +106,24 @@ private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiStat
 
     fun publishEvent(context: Context, onSuccess: () -> Unit, onFailure: () -> Unit) {
         viewModelScope.launch {
+            val publisherId = preferencesRepository.userId.firstOrNull()
             _isLoading.value = true
+            val date = "28-12-2024"
+            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy") // Matches backend format
+            val formattedDate = date.format(formatter) // Ensure 'date' is LocalDate
+
 
             val imageUri = selectedImageUri.value
-            val event = Event(
+            val event = EventRequestDto(
+                eventDescription = eventDescription,
                 eventId = UUID.randomUUID().toString(),
                 eventName = eventName,
-                eventDescription = eventDescription,
-                eventTags = eventTags,
                 college = college,
+                eventTags = eventTags,
+                eventVenue = "",
                 eventCategory = eventCategory,
-                publishers =  Publisher(publisherId = 1L,"",""),
-                eventVenue = ""
-
+                eventDate = formattedDate,
+                userId = publisherId ?: 0L
             )
 
 

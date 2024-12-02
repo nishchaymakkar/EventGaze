@@ -100,7 +100,7 @@ class SignInViewModel @Inject constructor(
     }
     fun saveLoginData(login: Login) {
         viewModelScope.launch {
-            preferencesRepository.saveSessionToken(login.sessionToken,login.userRole)
+            preferencesRepository.saveSessionToken(login.sessionToken,login.userRole,login.userId)
         }
     }
 

@@ -36,7 +36,7 @@ import retrofit2.http.Path
 import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.2:8080/eventgaze/"
+private const val BASE_URL = "http://192.168.1.10:8080/eventgaze/"
 
 
 val retrofit: Retrofit by lazy {
@@ -81,6 +81,11 @@ interface CollegeApiService{
     suspend fun getCollegeList(): List<College>
 }
 
+object EventApi{
+    val retrofitService: EventApiService by lazy {
+        retrofit.create(EventApiService::class.java)
+    }
+}
 interface LoginApiService{
     @POST("auth/student")
     suspend fun registerStudent(@Body student: StudentSignUp):Response<Void>
@@ -104,14 +109,14 @@ interface EventApiService {
     @Multipart
     @POST("events/create")
     suspend fun createEvent(
-        @Part("eventName") eventName: RequestBody,
-        @Part("eventCategoryId") eventCategoryId: RequestBody,
-        @Part("eventDescription") eventDescription: RequestBody,
-        @Part("eventDate") eventDate: RequestBody,
-        @Part("eventScope") eventScope: RequestBody,
-        @Part("eventTags") eventTags: RequestBody,
-        @Part("publisherId") publisherId: RequestBody,
-      //  @Part event: Event,
+//        @Part("eventName") eventName: RequestBody,
+//        @Part("eventCategoryId") eventCategoryId: RequestBody,
+//        @Part("eventDescription") eventDescription: RequestBody,
+//        @Part("eventDate") eventDate: RequestBody,
+//        @Part("eventScope") eventScope: RequestBody,
+//        @Part("eventTags") eventTags: RequestBody,
+//        @Part("publisherId") publisherId: RequestBody,
+        @Part("event") event: RequestBody,
         @Part eventArt: MultipartBody.Part
     ): Response<Unit>
 
@@ -133,7 +138,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
-           .addInterceptor(authInterceptor)
+         //  .addInterceptor(authInterceptor)
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })

@@ -4,10 +4,12 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import coil.network.HttpException
+import com.google.gson.Gson
 import com.minorproject.eventgaze.modal.User
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
+import com.minorproject.eventgaze.modal.data.EventRequestDto
 import com.minorproject.eventgaze.modal.data.Login
 import com.minorproject.eventgaze.modal.data.PublisherSignUp
 import com.minorproject.eventgaze.modal.data.StudentSignUp
@@ -116,7 +118,7 @@ class EventRepository @Inject constructor(
            Result.failure(e)
        }
     }
-    suspend fun postEventToServer(event: Event, imageUri: Uri, context: Context): Result<String> {
+    suspend fun postEventToServer(event: EventRequestDto, imageUri: Uri, context: Context): Result<String> {
         try {
             val contentResolver = context.contentResolver
             val fileInputStream = contentResolver.openInputStream(imageUri) ?: return Result.failure(Exception("File not found"))
@@ -133,18 +135,22 @@ class EventRepository @Inject constructor(
             val filePart = MultipartBody.Part.createFormData("eventArt", uniqueFileName, requestFile)
 
 
-            val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
-            val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
-            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.categoryId.toString())
-            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
-                DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeName)
-            val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
-            val publishers = RequestBody.create("text/plain".toMediaTypeOrNull(), event.publishers?.publisherId.toString())
+            val eventJson = Gson().toJson(event)
+            val eventPart = RequestBody.create("application/json".toMediaTypeOrNull(), eventJson)
 
-            val response = NetworkModule.retrofitService.createEvent(
-            eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, publishers,
-                 filePart
+
+//            val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
+//            val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
+//            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.categoryId.toString())
+//            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
+//                DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+//            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeName)
+//            val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
+//            val publishers = RequestBody.create("text/plain".toMediaTypeOrNull(), event.publishers?.publisherId.toLong())
+
+            val response = EventApi.retrofitService.createEvent(
+                //eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, publishers,
+                eventPart, filePart
             )
 
 //

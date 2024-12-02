@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.Module
@@ -28,6 +29,7 @@ class PreferencesRepository(private val context: Context) {
     companion object {
         val SESSION_TOKEN = stringPreferencesKey("session_token")
         val USER_ROLE = stringPreferencesKey("user_role")
+        val  USER_ID = longPreferencesKey("user_id")
     }
 
     // Retrieve session token
@@ -39,18 +41,20 @@ class PreferencesRepository(private val context: Context) {
     val userRole: Flow<String?> = dataStore.data.map { preferences ->
         preferences[USER_ROLE]
     }
-
+    val userId: Flow<Long?> = dataStore.data.map { preferences ->
+        preferences[USER_ID]
+    }
     // Save session token
-    suspend fun saveSessionToken(token: String, role: String) {
+    suspend fun saveSessionToken(token: String, role: String, id: Long) {
         dataStore.edit { preferences ->
             preferences[SESSION_TOKEN] = token
             preferences[USER_ROLE] = role
+            preferences[USER_ID] = id
         }
     }
     suspend fun clearPreferences() {
         dataStore.edit { preferences ->
-            preferences.remove(SESSION_TOKEN)
-            preferences.remove(USER_ROLE)
+            preferences.clear()
         }
     }
     suspend fun getSessionToken(): String?{
