@@ -15,13 +15,14 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 import javax.inject.Singleton
 
 // Create a Context extension for DataStore
 val Context.dataStore by preferencesDataStore(name = "user_prefs")
 
 // Repository for preferences access
-class PreferencesRepository(private val context: Context) {
+class PreferencesRepository @Inject constructor(@ApplicationContext context: Context) {
 
     private val dataStore = context.dataStore
     private var cachedToken: String? = null
@@ -57,18 +58,7 @@ class PreferencesRepository(private val context: Context) {
             preferences.clear()
         }
     }
-    suspend fun getSessionToken(): String?{
-        val sessionToken = dataStore.data
-            .firstOrNull()?.get(SESSION_TOKEN)
-        Log.d("session token", "token $sessionToken")
-        return sessionToken
-    }
-    suspend fun preloadSessionToken() {
-        cachedToken = getSessionToken()
-    }
 
-    // Synchronous getter for cached token
-    fun getCachedSessionToken(): String? = cachedToken
 
 }
 

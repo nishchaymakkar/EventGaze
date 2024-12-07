@@ -35,13 +35,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.ui.common.components.DialogCancelButton
 import com.minorproject.eventgaze.ui.common.components.DialogConfirmButton
-@Preview
+
 @Composable
 fun ProfileScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    restartApp: (String) -> Unit,
+    viewModel: PublisherProfileScreenViewModel = hiltViewModel()
 ){
     Column (
         modifier = modifier
@@ -228,7 +231,7 @@ fun ProfileScreen(
                     dismissButton = { DialogCancelButton(R.string.cancel) { showWarningDialog = false } },
                     confirmButton = {
                         DialogConfirmButton(R.string.signout) {
-                           // onSignOutClick()
+                           viewModel.signOut(restartApp)
                             showWarningDialog = false
                         }
                     },

@@ -242,7 +242,9 @@ val context = LocalContext.current
                             )
                         }
                         composable(ProfileScreenP) {
-                            ProfileScreen()
+                            ProfileScreen(
+                                restartApp = { route -> appState.clearAndNavigate(route) },
+                            )
                         }
                         composable(PiScreen) {
                             PiScreen(popUp = { appState.popUp() })

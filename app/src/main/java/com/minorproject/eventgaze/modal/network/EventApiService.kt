@@ -33,60 +33,36 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.10:8080/eventgaze/"
+private const val BASE_URL = "http://192.168.1.9:8080/eventgaze/"
 
 
-val retrofit: Retrofit by lazy {
-    Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(
-            OkHttpClient.Builder()
-                .addInterceptor(HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
-                })
-                .build()
-        )
 
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-}
+interface EventApiService {
 
-object LoginApi{
-    val retrofitService: LoginApiService by lazy {
-        retrofit.create(LoginApiService::class.java)
-    }
-}
-object CategoryApi{
-    val retrofitService: CategoryApiService by lazy {
-        retrofit.create(CategoryApiService::class.java)
-    }
-}
-object CollegeApi{
-    val retrofitService: CollegeApiService by lazy {
-        retrofit.create(CollegeApiService::class.java)
-    }
-}
+    @GET("events/getAll")
+    suspend fun getEvents(): List<Event>
 
+    @GET("events/eventId/id/{myId}")
+    suspend fun getEventById(@Path("myId") eventId: String?): Event
 
-interface CategoryApiService{
-    @GET("category/getAll")
-    suspend fun getCategory(): List<EventCategory>
-}
+    @Multipart
+    @POST("events/create")
+    suspend fun createEvent(
+        @Part("eventName") eventName: RequestBody,
+        @Part("eventCategoryId") eventCategoryId: RequestBody,
+        @Part("eventDescription") eventDescription: RequestBody,
+        @Part("eventDate") eventDate: RequestBody,
+        @Part("eventScope") eventScope: RequestBody,
+        @Part("eventTags") eventTags: RequestBody,
+        @Part("colleges") colleges: RequestBody,
+        @Part("userId") userId: RequestBody,
+        @Part eventArt: MultipartBody.Part
+    ): Response<Unit>
 
-interface CollegeApiService{
-    @GET("collegeList/getAll")
-    suspend fun getCollegeList(): List<College>
-}
-
-object EventApi{
-    val retrofitService: EventApiService by lazy {
-        retrofit.create(EventApiService::class.java)
-    }
-}
-interface LoginApiService{
     @POST("auth/student")
     suspend fun registerStudent(@Body student: StudentSignUp):Response<Void>
 
@@ -96,30 +72,12 @@ interface LoginApiService{
 
     @POST("auth/login")
     suspend fun login(@Body user: User): Response<Login>
-}
-interface EventApiService {
 
-    @GET("events/getAll")
-    suspend fun getEvents(): List<Event>
+    @GET("collegeList/getAll")
+    suspend fun getCollegeList(): List<College>
 
-    @GET("events/eventId/id/{myId}")
-    suspend fun getEventById(@Path("myId") eventId: String?): Event
-
-
-    @Multipart
-    @POST("events/create")
-    suspend fun createEvent(
-//        @Part("eventName") eventName: RequestBody,
-//        @Part("eventCategoryId") eventCategoryId: RequestBody,
-//        @Part("eventDescription") eventDescription: RequestBody,
-//        @Part("eventDate") eventDate: RequestBody,
-//        @Part("eventScope") eventScope: RequestBody,
-//        @Part("eventTags") eventTags: RequestBody,
-//        @Part("publisherId") publisherId: RequestBody,
-        @Part("event") event: RequestBody,
-        @Part eventArt: MultipartBody.Part
-    ): Response<Unit>
-
+    @GET("category/getAll")
+    suspend fun getCategory(): List<EventCategory>
 }
 
 
@@ -128,20 +86,14 @@ interface EventApiService {
 object NetworkModule {
 
 
-    @Provides
-    @Singleton
-    fun provideAuthInterceptor(preferencesRepository: PreferencesRepository): AuthInterceptor {
-        return AuthInterceptor(preferencesRepository)
-    }
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+    fun provideOkHttpClient(context: Context,preferencesRepository: PreferencesRepository): OkHttpClient {
         return OkHttpClient.Builder()
-         //  .addInterceptor(authInterceptor)
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            })
+            .addInterceptor(AuthInterceptor(context, preferencesRepository))
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
@@ -154,8 +106,10 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-    val retrofitService: EventApiService by lazy {
-        retrofit.create(EventApiService::class.java)
+    @Provides
+    @Singleton
+    fun provideEventApiService(retrofit: Retrofit): EventApiService {
+        return retrofit.create(EventApiService::class.java)
     }
 
 }

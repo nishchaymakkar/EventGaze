@@ -18,10 +18,13 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
@@ -32,13 +35,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 class EventRepository @Inject constructor(
-  private val authInterceptor: AuthInterceptor
+  private val eventApiService: EventApiService
 ) {
     @Volatile
     private var token: String? = null
     suspend fun fetchCategory(): Result<List<EventCategory>> {
         return try {
-            val categories = CategoryApi.retrofitService.getCategory()
+            val categories = eventApiService.getCategory()
             Result.success(categories)
         } catch (e: IOException) {
             Result.failure(e)
@@ -51,7 +54,7 @@ class EventRepository @Inject constructor(
 
     suspend fun fetchEvents(): Result<List<Event>> {
         return try {
-            val events = NetworkModule.retrofitService.getEvents()
+            val events = eventApiService.getEvents()
             Result.success(events)
         } catch (e: IOException) {
             Result.failure(e)
@@ -63,7 +66,7 @@ class EventRepository @Inject constructor(
     }
     suspend fun signUpForUser(studentSignUp: StudentSignUp): Result<String> {
         return try {
-            val response = LoginApi.retrofitService.registerStudent(studentSignUp)
+            val response = eventApiService.registerStudent(studentSignUp)
             if (response.isSuccessful) {
                 Result.success("User signed up successfully")
             } else {
@@ -76,7 +79,7 @@ class EventRepository @Inject constructor(
     }
     suspend fun signUpForPublisher(publisherSignUp: PublisherSignUp): Result<String> {
         return try {
-            val response = LoginApi.retrofitService.registerPublisher(publisherSignUp)
+            val response = eventApiService.registerPublisher(publisherSignUp)
             if (response.isSuccessful) {
                 Result.success("User signed up successfully")
             } else {
@@ -90,7 +93,7 @@ class EventRepository @Inject constructor(
 
     suspend fun login(user: User): Result<Login>{
         return try {
-            val response = LoginApi.retrofitService.login(user)
+            val response = eventApiService.login(user)
             if (response.isSuccessful) {
                 val loginResponse = response.body()
                 if (loginResponse != null) {
@@ -109,7 +112,7 @@ class EventRepository @Inject constructor(
 
     suspend fun fetEventById(eventId: String?): Result<Event>{
        return try {
-           val event = NetworkModule.retrofitService.getEventById(eventId)
+           val event = eventApiService.getEventById(eventId)
            Result.success(event)
        } catch (e: Exception ){
            Result.failure(e)
@@ -135,22 +138,22 @@ class EventRepository @Inject constructor(
             val filePart = MultipartBody.Part.createFormData("eventArt", uniqueFileName, requestFile)
 
 
-            val eventJson = Gson().toJson(event)
-            val eventPart = RequestBody.create("application/json".toMediaTypeOrNull(), eventJson)
 
 
-//            val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
-//            val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
-//            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.categoryId.toString())
-//            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
-//                DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-//            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeName)
-//            val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
-//            val publishers = RequestBody.create("text/plain".toMediaTypeOrNull(), event.publishers?.publisherId.toLong())
 
-            val response = EventApi.retrofitService.createEvent(
-                //eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags, publishers,
-                eventPart, filePart
+
+            val eventName = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventName)
+            val eventDescription = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventDescription)
+            val eventCategory = RequestBody.create("text/plain".toMediaTypeOrNull(),event.eventCategory.categoryId.toString())
+            val eventDate = RequestBody.create("text/plain".toMediaTypeOrNull(), LocalDate.now().format(
+                DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+            val eventScope = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeName)
+            val eventTags = RequestBody.create("text/plain".toMediaTypeOrNull(), event.eventTags)
+            val publishers = RequestBody.create("text/plain".toMediaTypeOrNull(), event.userId.toString())
+            val collegeId = RequestBody.create("text/plain".toMediaTypeOrNull(), event.college.collegeId.toString())
+
+            val response = eventApiService.createEvent(
+                eventName, eventCategory,eventDescription, eventDate, eventScope, eventTags,collegeId, publishers,  filePart
             )
 
 //
@@ -173,7 +176,7 @@ class EventRepository @Inject constructor(
 
     suspend fun fetchCollegeList(): Result<List<College>> {
         return try {
-            val colleges = CollegeApi.retrofitService.getCollegeList()
+            val colleges = eventApiService.getCollegeList()
             Result.success(colleges)
         } catch (e: IOException) {
             Result.failure(e)
@@ -183,11 +186,7 @@ class EventRepository @Inject constructor(
             Result.failure(e)
         }
     }
-    //get the session token from viewModel and update the authInterceptor
-//    fun updateToken(newToken: String) {
-//        token = newToken
-//       // Log.d("AuthInterceptor", "Token updated: $token")
-//    }
+
 
 
 
@@ -198,7 +197,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideEventRepository(authInterceptor: AuthInterceptor): EventRepository {
-        return EventRepository(authInterceptor)
+    fun provideEventRepository(eventApiService: EventApiService): EventRepository {
+        return EventRepository(eventApiService)
     }
 }

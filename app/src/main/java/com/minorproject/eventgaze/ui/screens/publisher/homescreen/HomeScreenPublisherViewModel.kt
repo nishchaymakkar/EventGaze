@@ -30,7 +30,7 @@ class HomeScreenPublisherViewModel @Inject constructor(
 
             eventUiState = when {
                 result.isSuccess -> {
-                    Log.d("MainScreenVieModel","Events fetched successfully: ${result.getOrThrow().size}")
+                    //Log.d("MainScreenVieModel","Events fetched successfully: ${result.getOrThrow().size}")
                     EventUiState.Success(result.getOrThrow())
                 }
                 result.isFailure -> {

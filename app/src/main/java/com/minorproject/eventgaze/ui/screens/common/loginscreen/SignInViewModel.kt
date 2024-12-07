@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.minorproject.eventgaze.HomeScreenP
@@ -47,7 +49,8 @@ class SignInViewModel @Inject constructor(
     private val password
         get() = uiState.value.password
 
-
+    private val _loginResult = MutableLiveData<Result<Unit>>(null)
+    val loginResult: LiveData<Result<Unit>> = _loginResult
 
 
     private val _loginState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
@@ -79,6 +82,7 @@ class SignInViewModel @Inject constructor(
             if (result.isSuccess) {
                 val loginResponse = result.getOrNull()
                 if (loginResponse != null) {
+                    _loginResult.value = Result.success(Unit)
                     _loginState.value = LoginUiState.Success(loginResponse)
                     saveLoginData(loginResponse)
 
@@ -88,11 +92,13 @@ class SignInViewModel @Inject constructor(
                         openAndPopUp(HomeScreenP, SignInScreen)
                     }
                 } else {
+                    _loginResult.value = Result.failure(Exception("Login Failed"))
                     _loginState.value =
                         LoginUiState.Error("Unexpected error: Login response is null")
                 }
             } else if (result.isFailure) {
                 val exception = result.exceptionOrNull()
+                _loginResult.value = Result.failure(Exception("Login Failed"))
                 _loginState.value = LoginUiState.Error(exception?.message ?: "Login failed")
             }
         }

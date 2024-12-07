@@ -54,8 +54,6 @@ class AddEventViewModel @Inject constructor(
         private set
 
 private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiState.Loading)
-    val sessionToken: Flow<String?> = preferencesRepository.sessionToken
-    val userId: Flow<Long?> = preferencesRepository.userId
 
     private val eventName
         get() = uiState.value.eventName
@@ -123,7 +121,7 @@ private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiStat
                 eventVenue = "",
                 eventCategory = eventCategory,
                 eventDate = formattedDate,
-                userId = publisherId ?: 0L
+                userId =  publisherId?: 1L
             )
 
 
@@ -131,11 +129,7 @@ private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiStat
 
                         val result =
                             eventRepository.postEventToServer(event, imageUri, context)
-                val token = preferencesRepository.sessionToken.firstOrNull()
-                if (token != null) {
-                  //send the session token to the eventRepository
-                   // eventRepository.updateToken(token)
-                }
+
 
                 if (result.isSuccess) {
                     _publishEventResult.value = Result.success(Unit)
@@ -183,7 +177,6 @@ private    var categoryUiState: CategoryUiState by mutableStateOf(CategoryUiStat
                 if (result.isSuccess) {
                     _collegeOptions.value = result.getOrNull().orEmpty()
                 } else {
-                    // Handle the error case, e.g., log the error or show a message
                     result.exceptionOrNull()?.printStackTrace()
                 }
             }

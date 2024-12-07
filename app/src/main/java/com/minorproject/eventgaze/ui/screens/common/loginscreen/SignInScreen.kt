@@ -36,10 +36,13 @@ import com.minorproject.eventgaze.ui.common.components.OrDivider
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
@@ -70,6 +73,18 @@ fun SignInScreen(
 //            SnackbarManager.showMessage(R.string.sign_in_failed)
 //        }
 //    }
+    val context = LocalContext.current
+    val loginResult by viewModel.loginResult.observeAsState()
+
+    LaunchedEffect(loginResult) {
+      loginResult?.let {
+            if (it.isSuccess) {
+                Toast.makeText(context, "Successfully Log In", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Log In failed please try again", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     SignInScreenContent(
         uiState = uiState,
         onEmailChange = viewModel::onEmailChange ,
