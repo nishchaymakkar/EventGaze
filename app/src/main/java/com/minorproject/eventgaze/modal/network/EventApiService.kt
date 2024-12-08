@@ -26,6 +26,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.9:8080/eventgaze/"
+private const val BASE_URL = "http://192.168.1.8:8080/eventgaze/"
 
 
 
@@ -62,6 +63,9 @@ interface EventApiService {
         @Part("userId") userId: RequestBody,
         @Part eventArt: MultipartBody.Part
     ): Response<Unit>
+
+    @DELETE("events/id/{myId}")
+    suspend fun deleteEvent(@Path("myId") eventId: Long): Response<Unit>
 
     @POST("auth/student")
     suspend fun registerStudent(@Body student: StudentSignUp):Response<Void>

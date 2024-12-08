@@ -213,7 +213,7 @@ fun SharedTransitionScope.CollegeEventScreen(
 
 @Composable
 private fun ItemCard(
-    id: String?,
+    id: Long?,
     image: String?,
     title: String,
     des: String,

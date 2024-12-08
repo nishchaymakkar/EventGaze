@@ -25,6 +25,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
@@ -37,8 +38,7 @@ import javax.inject.Singleton
 class EventRepository @Inject constructor(
   private val eventApiService: EventApiService
 ) {
-    @Volatile
-    private var token: String? = null
+    //fetch event categories
     suspend fun fetchCategory(): Result<List<EventCategory>> {
         return try {
             val categories = eventApiService.getCategory()
@@ -51,7 +51,7 @@ class EventRepository @Inject constructor(
             Result.failure(e)
         }
     }
-
+    //fetch all events
     suspend fun fetchEvents(): Result<List<Event>> {
         return try {
             val events = eventApiService.getEvents()
@@ -64,6 +64,7 @@ class EventRepository @Inject constructor(
             Result.failure(e)
         }
     }
+    //sign up for user
     suspend fun signUpForUser(studentSignUp: StudentSignUp): Result<String> {
         return try {
             val response = eventApiService.registerStudent(studentSignUp)
@@ -77,6 +78,7 @@ class EventRepository @Inject constructor(
         }
 
     }
+    //sign up for publishers
     suspend fun signUpForPublisher(publisherSignUp: PublisherSignUp): Result<String> {
         return try {
             val response = eventApiService.registerPublisher(publisherSignUp)
@@ -90,7 +92,7 @@ class EventRepository @Inject constructor(
         }
 
     }
-
+    //login
     suspend fun login(user: User): Result<Login>{
         return try {
             val response = eventApiService.login(user)
@@ -109,7 +111,7 @@ class EventRepository @Inject constructor(
         }
     }
 
-
+    //fetch event by id
     suspend fun fetEventById(eventId: String?): Result<Event>{
        return try {
            val event = eventApiService.getEventById(eventId)
@@ -121,6 +123,7 @@ class EventRepository @Inject constructor(
            Result.failure(e)
        }
     }
+    // post events
     suspend fun postEventToServer(event: EventRequestDto, imageUri: Uri, context: Context): Result<String> {
         try {
             val contentResolver = context.contentResolver
@@ -173,7 +176,7 @@ class EventRepository @Inject constructor(
             return Result.failure(e)
         }
     }
-
+    // fetch the colleges list
     suspend fun fetchCollegeList(): Result<List<College>> {
         return try {
             val colleges = eventApiService.getCollegeList()
@@ -187,8 +190,19 @@ class EventRepository @Inject constructor(
         }
     }
 
-
-
+    // delete events
+    suspend fun deleteEvent(eventId: Long) : Result<Unit> {
+        return try {
+            eventApiService.deleteEvent(eventId)
+            Result.success(Unit)
+        } catch (e: IOException) {
+            Result.failure(e)
+        } catch (e: HttpException) {
+            Result.failure(e)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
 }
 @Module

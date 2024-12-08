@@ -90,7 +90,7 @@ import kotlinx.coroutines.launch
 fun HomeScreenContentPreview() {
 
     // Mock values for testing the composable
-   val sampleEvent = Event(eventId = "sljlskjdfflc",// Replace with your own drawable resource
+   val sampleEvent = Event(eventId = 0L,// Replace with your own drawable resource
     eventCategory =  EventCategory(1L,"Sports"),
     eventName =    "Event Title",
     eventDescription = "This is a sample description of the event. This is a sample description of the event." +
@@ -302,7 +302,7 @@ fun EventList(
 
 @Composable
 fun ItemCard(
-    id: String?,
+    id: Long?,
     image: String?,
     title: String,
     des: String,

@@ -9,7 +9,7 @@ data class Event(
     @SerialName("event_description")
     val eventDescription: String,
     @SerialName("event_id")
-    val eventId: String,
+    val eventId: Long,
     @SerialName("event_name")
     val eventName: String,
     @SerialName("college_id")
