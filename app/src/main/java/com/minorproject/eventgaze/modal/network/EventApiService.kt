@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.8:8080/eventgaze/"
+private const val BASE_URL = "http://192.168.1.4:8080/eventgaze/"
 
 
 
@@ -65,7 +65,8 @@ interface EventApiService {
     ): Response<Unit>
 
     @DELETE("events/id/{myId}")
-    suspend fun deleteEvent(@Path("myId") eventId: Long): Response<Unit>
+    suspend fun deleteEvent(@Path("myId") myId: Long): Response<Unit>
+
 
     @POST("auth/student")
     suspend fun registerStudent(@Body student: StudentSignUp):Response<Void>

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 
 package com.minorproject.eventgaze.ui.screens.user.colleges_screen
 
@@ -10,9 +10,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -33,13 +35,19 @@ import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,7 +82,6 @@ import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventList
 import com.minorproject.eventgaze.ui.screens.user.homescreen.ErrorScreen
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
-import com.minorproject.eventgaze.ui.screens.user.homescreen.ItemCard
 
 @Preview
 @Composable
@@ -89,7 +96,7 @@ private fun CollegeEventScreenPreview() {
 fun SharedTransitionScope.CollegeEventScreen(
     college: College,
     eventUiState: EventUiState,
-    detailnavigate: (String) -> Unit,
+    navigate: (String) -> Unit,
     viewModel: CollegeEventViewModel = viewModel(),
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
@@ -116,7 +123,7 @@ fun SharedTransitionScope.CollegeEventScreen(
                             painter = painterResource(R.drawable.iitselampur),
                             contentDescription = null,
                             modifier = Modifier
-                                .aspectRatio(1 / 1f)
+                                .aspectRatio(16 / 9f)
                                 .sharedElement(
                                     state = rememberSharedContentState(key = "college_${college.collegeId}"),
                                     animatedVisibilityScope = animatedVisibilityScope,
@@ -173,7 +180,7 @@ fun SharedTransitionScope.CollegeEventScreen(
                     is EventUiState.Loading -> CircularProgressIndicator()
                     is EventUiState.Success -> {
                        Column (modifier = Modifier.fillMaxSize().align(Alignment.End) ){
-                            LazyColumn(modifier = Modifier.fillMaxSize(),
+                            LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 items(eventUiState.event.filter { event -> event.college.collegeId == college.collegeId }) { event ->
 
@@ -185,9 +192,10 @@ fun SharedTransitionScope.CollegeEventScreen(
                                         modifier = Modifier,
                                         publishername = "",
                                         onShareClick = { },
-                                        onItemClick = { },
+                                        onItemClick = {
+                                            viewModel.onItemClick(event,navigate)
+                                        },
                                         animatedVisibilityScope = animatedVisibilityScope,
-
                                         )
                                 }
                             }
@@ -211,6 +219,17 @@ fun SharedTransitionScope.CollegeEventScreen(
 
 }
 
+
+fun isColorTooLight(color: Int): Boolean {
+    val red = (color shr 16) and 0xFF
+    val green = (color shr 8) and 0xFF
+    val blue = color and 0xFF
+    // Calculate the perceived brightness of the color
+    val brightness = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+    return brightness > 0.8 // Threshold for "too light" colors
+}
+
+
 @Composable
 private fun ItemCard(
     id: Long?,
@@ -223,7 +242,11 @@ private fun ItemCard(
     // profileimg: Int,
     publishername: String,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    ) {
+  //  onDeleteClick: () -> Unit,
+//    alpha: Float,
+//    scale: Float,
+
+) {
 
     var isSaveClicked by remember { mutableStateOf(false) }
     var backgroundColor by remember { mutableStateOf(Color.Transparent) }
@@ -256,23 +279,22 @@ private fun ItemCard(
         }
     }
 
-    val lightenedColor = backgroundColor.copy()
-
+    val lightenedColor = backgroundColor
+    val bottomSheetState = rememberModalBottomSheetState()
+    var isSheetOpen by remember { mutableStateOf(false) }
     SharedTransitionLayout {
         androidx.compose.material3.Card(
             modifier = modifier
-                .fillMaxWidth().padding(horizontal = 16.dp, vertical =  16.dp)
+                .fillMaxWidth()
+//                .scale(scale)
+//                .alpha(alpha)
                 .fillMaxHeight()
-            // .aspectRatio(3 / 4f)
-            ,
+                .aspectRatio(9 / 14f),
             colors = CardDefaults.cardColors(
                 containerColor = lightenedColor
             ),
             onClick = { onItemClick() },
-            border = BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.secondary.copy(.2f)
-            ),
+            // border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.secondary.copy(.2f)),
             elevation = CardDefaults.elevatedCardElevation(2.dp)
         ) {
 
@@ -308,7 +330,7 @@ private fun ItemCard(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                     .fillMaxHeight()
-                    .background(Color.Transparent)
+                    .background(lightenedColor)
 
             ) {
                 Row(
@@ -323,6 +345,7 @@ private fun ItemCard(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.secondary,
+                        maxLines = 1
                     )
 
                 }
@@ -340,7 +363,7 @@ private fun ItemCard(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.secondary,
                         maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Clip,
                         textAlign = TextAlign.Justify
                     )
                 }
@@ -348,7 +371,7 @@ private fun ItemCard(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    //horizontalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(32.dp)
@@ -356,7 +379,7 @@ private fun ItemCard(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(2f)
+                        modifier = Modifier.weight(4f)
                     ) {
                         Image(
                             painter = painterResource(R.drawable.img),
@@ -370,55 +393,27 @@ private fun ItemCard(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = publishername, maxLines = 1,
+                            text = publishername ?: "Unknown", maxLines = 1,
                             color = MaterialTheme.colorScheme.secondary,
                             fontWeight = FontWeight.Normal
                         )
+                        Spacer(modifier.width(30.dp))
+
                     }
-                    Spacer(modifier.width(24.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        IconButton(
-                            onClick = { isSaveClicked = !isSaveClicked },
-                            modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary.copy(.2f))
-                        ) {
-                            Icon(
-                                imageVector = if (isSaveClicked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = "Save",
-                                tint = MaterialTheme.colorScheme.secondary,
-
-                                )
-                        }
-
-                        IconButton(
-                            onClick = onShareClick,
-                            modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary.copy(.2f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = "Share",
-                                tint = MaterialTheme.colorScheme.secondary
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Menu Item",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = modifier
+                            .clickable(onClick = { isSheetOpen = true })
+                            .padding(
+                                PaddingValues(0.dp)
                             )
+                    )
 
-                        }
-                    }
+
                 }
             }
         }
     }
-
-}
-fun isColorTooLight(color: Int): Boolean {
-    val red = (color shr 16) and 0xFF
-    val green = (color shr 8) and 0xFF
-    val blue = color and 0xFF
-    // Calculate the perceived brightness of the color
-    val brightness = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
-    return brightness > 0.8 // Threshold for "too light" colors
 }

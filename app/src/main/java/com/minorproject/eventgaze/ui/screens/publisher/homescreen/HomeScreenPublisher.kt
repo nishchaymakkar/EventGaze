@@ -2,6 +2,7 @@
 
 package com.minorproject.eventgaze.ui.screens.publisher.homescreen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -94,6 +95,7 @@ import com.minorproject.eventgaze.ui.screens.user.homescreen.ErrorScreen
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
 import com.minorproject.eventgaze.ui.screens.user.homescreen.ItemCard
 import com.minorproject.eventgaze.ui.screens.user.homescreen.calculateScaleAndAlpha
+import com.minorproject.eventgaze.ui.screens.user.homescreen.shareEvent
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 
 @ExperimentalSharedTransitionApi
@@ -158,8 +160,14 @@ fun HomeScreenContentPublisher(animatedVisibilityScope: AnimatedVisibilityScope,
                                retryAction: () -> Unit,
                                viewModel: HomeScreenPublisherViewModel = hiltViewModel()) {
 
+
     val deleteEventState by viewModel.deleteEventState.collectAsState()
     val context = LocalContext.current
+    val onShareClick: (Event) -> Unit = { event ->
+        val shareLink = viewModel.getShareableLink(event)
+
+        shareEvent(context,shareLink)
+    }
     LaunchedEffect(deleteEventState) {
         deleteEventState?.let {
             if (it.isSuccess) {
@@ -221,8 +229,11 @@ fun HomeScreenContentPublisher(animatedVisibilityScope: AnimatedVisibilityScope,
                     EventList(events = eventUiState.event,
                         modifier = Modifier,
                         animatedVisibilityScope = animatedVisibilityScope,
-                        onItemClick = {}, onShareClick = {}, onDeleteClick = { event ->
-                            viewModel.onDeleteClick(event.eventId)
+                        onItemClick = {}, onShareClick = {event ->
+                            onShareClick(event) }, onDeleteClick = { eventId ->
+                            Log.d("on delete ", "$eventId")
+                           // viewModel.onDeleteClick(eventId)
+
                         } )
 
 
@@ -243,23 +254,16 @@ fun EventList(
     events: List<Event>,
     onShareClick: (Event) -> Unit,
     modifier: Modifier, onItemClick: (Event)-> Unit,
-    onDeleteClick: (Event) -> Unit,
+    onDeleteClick: (Long) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
 ){
 
 
 
 
-//    val pagerState = rememberPagerState(initialPage = 0, pageCount = { events.size })
-//    VerticalPager(
-//        state = pagerState,
-//        modifier = Modifier.fillMaxSize()
-//    ) { page ->
-//        val event = events[page]
-//        val scaleAndAlpha = calculateScaleAndAlpha(page, pagerState)
 
     LazyColumn(modifier = modifier.padding(horizontal = 16.dp,), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        itemsIndexed( events) { index: Int, event: Event ->
+        itemsIndexed( events) { index, event ->
 
 
         Box(
@@ -274,11 +278,9 @@ fun EventList(
                 publishername = event.publishers?.publisherOrgName ?: "",
                 onShareClick = { onShareClick(event) },
                 onItemClick = { onItemClick(event) },
-                onDeleteClick = {onDeleteClick(event)},
+                onDeleteClick = {onDeleteClick(event.eventId)},
                 animatedVisibilityScope = animatedVisibilityScope,
-              //  onMoreClick = {}
-//                scale = scaleAndAlpha.first,
-//                alpha = scaleAndAlpha.second
+
             )
         }
         }

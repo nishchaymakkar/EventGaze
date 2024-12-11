@@ -227,7 +227,7 @@ val context = LocalContext.current
                             if (college != null) {
                                 CollegeEventScreen(
                                     college = college,
-                                    detailnavigate = { route -> appState.navigate(route) },
+                                    navigate = { route -> appState.navigate(route) },
                                     eventUiState = eventViewModel.eventUiState,
                                     animatedVisibilityScope = this
                                 )

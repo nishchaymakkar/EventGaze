@@ -1,7 +1,10 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalAnimationApi::class)
+@file:OptIn(ExperimentalSharedTransitionApi::class, ExperimentalAnimationApi::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.minorproject.eventgaze.ui.screens.user.detailScreen
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -16,22 +19,34 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Divider
-import androidx.compose.material.IconButton
+import androidx.compose.material3.Divider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,7 +78,7 @@ private fun DetailScreenPreview() {
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DetailScreen(
 
@@ -74,112 +89,167 @@ fun DetailScreen(
     viewModel: DetailScreenViewModel = hiltViewModel()
 ) {
 
+    val lazyListState = rememberLazyListState()
 
-        Column(Modifier.fillMaxSize()) {
+
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(
+                        onClick = { popUp() },
+                        modifier = modifier.padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor =  if (lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 0) {
+                        MaterialTheme.colorScheme.onPrimary // Color for scrolled state
+                    } else {
+                        Color.Transparent // Transparent for initial state
+                    },
+                    navigationIconContentColor = MaterialTheme.colorScheme.secondary
+                )
+            )
+        },
+        )  {
+
             if (event != null) {
-
-
-
-                    Box(modifier = Modifier.fillMaxSize()) {
-
-                        Column(
+                LazyColumn(
+                            state = lazyListState,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .fillMaxHeight()
-                                .verticalScroll(rememberScrollState())
+                                .fillMaxHeight().padding()
                                 .background(MaterialTheme.colorScheme.onPrimary),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(event.eventArt)
-                                    .crossfade(true)
-                                    .dispatcher(dispatcher = Dispatchers.IO) // Enable caching
-                                    .build(),
-                                placeholder = painterResource(R.drawable.loading_img),
-                                error = painterResource(R.drawable.ic_connection_error),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = modifier
-                                    .aspectRatio(1 / 1f)
+                            item  {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(event.eventArt)
+                                        .crossfade(true)
+                                        .dispatcher(dispatcher = Dispatchers.IO) // Enable caching
+                                        .build(),
+                                    placeholder = painterResource(R.drawable.loading_img),
+                                    error = painterResource(R.drawable.ic_connection_error),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = modifier
+                                        .aspectRatio(1 / 1f)
                                     //.clip(shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
-                                    .align(Alignment.Start)
+
 //                                    .sharedElement(
 //                                        state = rememberSharedContentState(key = "eventart${event?.eventArt}"),
 //                                        animatedVisibilityScope = animatedVisibilityScope,
 //                                        boundsTransform = { intital, target -> tween(durationMillis = 5000) }
 //                                    )
-                            )
-                            Row(
-                                modifier = modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        start = 16.dp,
-                                        top = 16.dp,
-                                        bottom = 16.dp,
-                                        end = 16.dp
-                                    )
-                            ) {
-                                Text(
-                                    text = event.eventName,
-                                    style = MaterialTheme.typography.headlineLarge,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier
+                                )
+                            }
+                            item {
+                                Row(
+                                    modifier = modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = 16.dp,
+                                            top = 16.dp,
+                                            bottom = 16.dp,
+                                            end = 16.dp
+                                        )
+                                ) {
+                                    Text(
+                                        text = event.eventName,
+                                        style = MaterialTheme.typography.headlineLarge,
+                                        fontWeight = FontWeight.Medium,
+                                        color =MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier
 //                                        .sharedElement(
 //                                        state = rememberSharedContentState(key = event.eventName),
 //                                        animatedVisibilityScope = animatedVisibilityScope,
 //                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
 //                                    )
-                                )
-                            }
-                            Divider(color = MaterialTheme.colorScheme.secondary.copy(.2f))
-                            Row (modifier.fillMaxWidth().padding(start =  16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically){
-                                Icon(
-                                    imageVector = Icons.Default.CalendarMonth, contentDescription = null, tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier.width(10.dp))
-                                if (event != null) {
-                                    Text(
-                                        text = event.eventDate ?: "dd mm yyyy",
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        style = MaterialTheme.typography.bodyMedium
                                     )
                                 }
                             }
-                            Row (modifier.fillMaxWidth().padding(start =  16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp), verticalAlignment = Alignment.Top){
-                                Icon(
-                                    imageVector = Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier.width(10.dp))
-                                if (event != null) {
-                                    Text(
-                                        text = event.eventVenue ?: "unexpected location",
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        textAlign = TextAlign.Justify
+                            item{
+                                Divider(color = MaterialTheme.colorScheme.secondary.copy(.2f))
+                            }
+                            item {
+                                Row(
+                                    modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = 16.dp,
+                                            end = 16.dp,
+                                            top = 16.dp,
+                                            bottom = 8.dp
+                                        ), verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarMonth,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
+                                    Spacer(modifier.width(10.dp))
+                                    if (event != null) {
+                                        Text(
+                                            text = event.eventDate ?: "dd mm yyyy",
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
                             }
-                            Divider(color = MaterialTheme.colorScheme.secondary.copy(.2f))
-                            Row(
-                                modifier = modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            ) {
-                                if (event != null) {
-                                    Text(
-                                        text = event.eventDescription ?: "",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        textAlign = TextAlign.Justify,
-                                        modifier = Modifier
-                            //                                        .sharedElement(
-                            //                                        state = rememberSharedContentState(key = event.eventDescription),
-                            //                                        animatedVisibilityScope = animatedVisibilityScope,
-                            //                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
-                            //                                    )
+                            item{
+                                Row(
+                                    modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.LocationOn,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
                                     )
+                                    Spacer(modifier.width(10.dp))
+                                    if (event != null) {
+                                        Text(
+                                            text = event.eventVenue ?: "unexpected location",
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            textAlign = TextAlign.Justify
+                                        )
+                                    }
+                                }
+                                Divider(color = MaterialTheme.colorScheme.secondary.copy(.2f))
+                            }
+                            item  {
+                                Row(
+                                    modifier = modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    if (event != null) {
+                                        Text(
+                                            text = event.eventDescription ?: "",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            textAlign = TextAlign.Justify,
+                                            modifier = Modifier
+                                            //                                        .sharedElement(
+                                            //                                        state = rememberSharedContentState(key = event.eventDescription),
+                                            //                                        animatedVisibilityScope = animatedVisibilityScope,
+                                            //                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
+                                            //                                    )
+                                        )
+                                    }
                                 }
                             }
 
@@ -195,14 +265,14 @@ fun DetailScreen(
 //                                    color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyMedium
 //                                )
 //                            }
-                            Row(
-                                horizontalArrangement = Arrangement.Start,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = modifier
-                                    .padding(16.dp)
-                                    .align(Alignment.End)
-                                    .fillMaxWidth(),
-                            ) {
+                            item{
+                                Row(
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                ) {
 
 //                                AsyncImage( model = ImageRequest.Builder(LocalContext.current)
 //                                    .data(event.publisher.publisherImage ?: "")
@@ -214,45 +284,32 @@ fun DetailScreen(
 //                                    contentDescription = null,
 //                                    contentScale = ContentScale.Crop,
 //                                    )
-                                if (event.publishers == null) {
-                                    Text("Publisher data is unavailable.")
-                                } else {
-                                    val publishers = event.publishers
-                                    if (publishers != null) {
-                                        Text(
-                                            text = event.publishers.publisherOrgName ?: "unknown value",
-                                            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
+                                    if (event.publishers == null) {
+                                        Text("Publisher data is unavailable.")
                                     } else {
-                                        Text("No publishers available.")
+                                        val publishers = event.publishers
+                                        if (publishers != null) {
+                                            Text(
+                                                text = event.publishers.publisherOrgName
+                                                    ?: "unknown value",
+                                                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        } else {
+                                            Text("No publishers available.")
+                                        }
                                     }
+
+
                                 }
-
-
                             }
 
 
                         }
-                        IconButton(
-                            onClick = { popUp() },
-                            modifier = modifier
-                                .align(Alignment.TopStart)
-                                .padding(top = 26.dp, start = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                )
-
-                        }
 
 
 
-
-                }
             } else {
                 Text("an unexpected error occur")
 
@@ -263,3 +320,4 @@ fun DetailScreen(
         
     }
 }
+

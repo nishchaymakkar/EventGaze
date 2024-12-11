@@ -194,6 +194,7 @@ class EventRepository @Inject constructor(
     suspend fun deleteEvent(eventId: Long) : Result<Unit> {
         return try {
             eventApiService.deleteEvent(eventId)
+            Log.d("repository delete","$eventId")
             Result.success(Unit)
         } catch (e: IOException) {
             Result.failure(e)

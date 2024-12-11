@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.network.HttpException
 import com.minorproject.eventgaze.AddEventScreen
 import com.minorproject.eventgaze.ProfileScreenP
+import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.network.EventRepository
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,8 +60,14 @@ class HomeScreenPublisherViewModel @Inject constructor(
     fun onAddEventClick(navigate: (String)-> Unit){
         navigate(AddEventScreen)
     }
+    fun getShareableLink(event: Event): String {
+        val baseUrl = "http://192.168.1.8:8080"
+        val eventLink = "$baseUrl/events/eventId/id/${event.eventId}"
+        return eventLink
+    }
     fun onDeleteClick(eventId: Long){
         viewModelScope.launch {
+            Log.d("Delete eventId ViewModel","$eventId")
          _deleteEventState.value =   eventRepository.deleteEvent(eventId)
         }
     }
