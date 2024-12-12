@@ -2,10 +2,16 @@
 
 package com.minorproject.eventgaze.ui.screens.user.colleges_screen
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -22,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,8 +38,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
+import androidx.compose.material3.Card
+import androidx.compose.material3.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Delete
@@ -47,6 +56,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +71,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -82,6 +94,7 @@ import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventList
 import com.minorproject.eventgaze.ui.screens.user.homescreen.ErrorScreen
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
+import com.minorproject.eventgaze.ui.screens.user.homescreen.shareEvent
 
 @Preview
 @Composable
@@ -91,132 +104,194 @@ private fun CollegeEventScreenPreview() {
 //        detailnavigate = {}
 //    )
 }
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.CollegeEventScreen(
     college: College,
+    popUp: ()-> Unit,
     eventUiState: EventUiState,
     navigate: (String) -> Unit,
     viewModel: CollegeEventViewModel = viewModel(),
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(MaterialTheme.colorScheme.onPrimary),
+    val context = LocalContext.current
+    val onShareClick: (Event) -> Unit = { event ->
+        val shareLink = viewModel.getShareableLink(event)
+        shareEvent(context,shareLink)
+    }
+    val textOffset = remember { Animatable(0f) }
+    val infiniteTransition = rememberInfiniteTransition()
 
-    )
-    {
+    // Animate the offset
+    LaunchedEffect(Unit) {
+        val textWidth = college.collegeName.length   // Approximation for width (adjust as needed)
+        while (true) {
 
-        if (college != null) {
-
-
-            SharedTransitionLayout {
-                Box(
-                    modifier = Modifier.align(Alignment.Start)
-                ) {
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.iitselampur),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .aspectRatio(16 / 9f)
-                                .sharedElement(
-                                    state = rememberSharedContentState(key = "college_${college.collegeId}"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { initial, target ->
-                                        tween(durationMillis = 3000)
-                                    },
-                                ),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-
-
-
-                    Card(
-                        shape = MaterialTheme.shapes.small,
-                        backgroundColor = MaterialTheme.colorScheme.background,
+            textOffset.animateTo(
+                targetValue = -textWidth.toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = (textWidth / 20f * 1000).toInt(),
+                        easing = LinearEasing,
+                    ),
+                    repeatMode = RepeatMode.Restart
+                )
+            )
+            textOffset.snapTo(0f) // Reset offset for seamless looping
+        }
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row (modifier = Modifier.padding(start = 20.dp, end = 8.dp)){
+                    Text(
+                        text = college.collegeName,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .blur(150.dp)
-                            .fillMaxWidth()
                             .padding(10.dp)
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth(),
-                    ){
-                        Text(
-                            text = college.collegeName,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary,
-                            maxLines = 2,
-                            textAlign = TextAlign.Center,
+                            .offset(textOffset.value.dp)
+
+                    )
+
+
+                }},
+                navigationIcon = {
+                    IconButton(
+                        onClick = {  popUp()},
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    navigationIconContentColor = MaterialTheme.colorScheme.secondary
+                )
+            )
+        }
+    ){
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.onPrimary),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            )
+        {
+
+            if (college != null) {
+
+
+                item {
+                    SharedTransitionLayout {
+                        Box(
                             modifier = Modifier
-                                .padding(10.dp)
-                                .background(color = MaterialTheme.colorScheme.background)
-                                .fillMaxWidth()
-                                .sharedElement(
-                                    state = rememberSharedContentState(key = "college_${college.collegeName}"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    boundsTransform = { initial, target ->
-                                        tween(durationMillis = 3000)
-                                    },
+                        ) {
+                            Card(
+                                shape = MaterialTheme.shapes.extraLarge
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.iitselampur),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .aspectRatio(1f)
+                                        .sharedElement(
+                                            state = rememberSharedContentState(key = "college_${college.collegeId}"),
+                                            animatedVisibilityScope = animatedVisibilityScope,
+                                            boundsTransform = { initial, target ->
+                                                tween(durationMillis = 3000)
+                                            },
+                                        ),
+                                    contentScale = ContentScale.Crop
                                 )
+                            }
+
+
+
+
+
+
+                        }
+
+                    }
+                }
+                when (eventUiState) {
+                    is EventUiState.Loading -> item { CircularProgressIndicator() }
+                    is EventUiState.Success ->
+                        EventList(events = eventUiState.event, college = college,
+                            onShareClick = { event ->
+                               onShareClick(event)
+
+                            }, onDeleteClick = {}, onItemClick = {event ->
+                              onShareClick(event)
+                            },
+                            animatedVisibilityScope = animatedVisibilityScope, modifier = Modifier
                         )
 
-
-
-                    }
-
-
-
-                }
-
-            }
-                when (eventUiState){
-                    is EventUiState.Loading -> CircularProgressIndicator()
-                    is EventUiState.Success -> {
-                       Column (modifier = Modifier.fillMaxSize().align(Alignment.End) ){
-                            LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                                items(eventUiState.event.filter { event -> event.college.collegeId == college.collegeId }) { event ->
-
-                                    ItemCard(
-                                        id = event.eventId,
-                                        image = event.eventArt,
-                                        title = event.eventName,
-                                        des = event.eventDescription,
-                                        modifier = Modifier,
-                                        publishername = "",
-                                        onShareClick = { },
-                                        onItemClick = {
-                                            viewModel.onItemClick(event,navigate)
-                                        },
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        )
-                                }
-                            }
-                        }
-                    }
-                    is EventUiState.Error -> {
+                    is EventUiState.Error -> item {
                         ErrorScreen(modifier = Modifier, retryAction = {})
                     }
 
 
+                }
+
+
+            } else {
+
+                item { Text(text = "College not found") }
+
             }
-
-
-
-        } else {
-
-                Text(text = "College not found")
-
         }
     }
 
+}
+
+fun LazyListScope.EventList(
+    events: List<Event>,
+    college: College,
+    onShareClick: (Event) -> Unit,
+    modifier: Modifier, onItemClick: (Event)-> Unit,
+    onDeleteClick: (Long) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+){
+
+
+
+
+
+        itemsIndexed( events.filter { event -> event.college.collegeId == college.collegeId  }) { index, event ->
+
+
+            Box(
+                modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)
+            )   {
+
+                ItemCard(
+                    id = event.eventId,
+                    image = event.eventArt ?: "",
+                    title = event.eventName ?: "",
+                    des = event.eventDescription ?: "",
+                    modifier = Modifier,
+                    publishername = event.publishers?.publisherOrgName ?: "",
+                    onShareClick = { onShareClick(event) },
+                    onItemClick = { onItemClick(event) },
+                   // onDeleteClick = { onDeleteClick(event.eventId) },
+                    animatedVisibilityScope = animatedVisibilityScope,
+
+                    )
+
+        }
+    }
 }
 
 
@@ -400,16 +475,34 @@ private fun ItemCard(
                         Spacer(modifier.width(30.dp))
 
                     }
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Menu Item",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = modifier
-                            .clickable(onClick = { isSheetOpen = true })
-                            .padding(
-                                PaddingValues(0.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(2f)
+                    ) {
+                        IconButton(onClick = {isSaveClicked = !isSaveClicked},
+                            modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondary.copy(.2f))) {
+                            Icon(
+                                imageVector = if (isSaveClicked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                contentDescription = "Save",
+                                tint = MaterialTheme.colorScheme.secondary,
+
+                                )
+                        }
+
+                        IconButton(onClick = {onShareClick()},
+                            modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondary.copy(.2f))) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share",
+                                tint = MaterialTheme.colorScheme.secondary
                             )
-                    )
+
+                        }
+                    }
+
 
 
                 }
