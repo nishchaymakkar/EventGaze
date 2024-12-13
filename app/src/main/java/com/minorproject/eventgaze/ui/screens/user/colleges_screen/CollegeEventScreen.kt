@@ -81,6 +81,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.palette.graphics.Palette
@@ -138,7 +139,7 @@ fun SharedTransitionScope.CollegeEventScreen(
                     repeatMode = RepeatMode.Restart
                 )
             )
-            textOffset.snapTo(0f) // Reset offset for seamless looping
+           infiniteTransition.label // Reset offset for seamless looping
         }
     }
     Scaffold(
@@ -146,18 +147,20 @@ fun SharedTransitionScope.CollegeEventScreen(
             TopAppBar(
                 title = {
                     Row (modifier = Modifier.padding(start = 20.dp, end = 8.dp)){
-                    Text(
-                        text = college.collegeName,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary,
-                        maxLines = 1,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .offset(textOffset.value.dp)
+                        Text(
+                            text = college.collegeName,
+                            //style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary,
+                            minLines = 1,
+                            maxLines = 1,
+                            fontSize = 8.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(10.dp)
+                              .offset(textOffset.value.dp)
 
-                    )
+                        )
 
 
                 }},
@@ -233,7 +236,7 @@ fun SharedTransitionScope.CollegeEventScreen(
                                onShareClick(event)
 
                             }, onDeleteClick = {}, onItemClick = {event ->
-                              onShareClick(event)
+                              viewModel.onItemClick(event,navigate)
                             },
                             animatedVisibilityScope = animatedVisibilityScope, modifier = Modifier
                         )
@@ -274,6 +277,7 @@ fun LazyListScope.EventList(
 
             Box(
                 modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)
+
             )   {
 
                 ItemCard(
