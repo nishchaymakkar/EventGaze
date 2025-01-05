@@ -13,6 +13,7 @@ val onPrimary1 = Color(0xFF191B1A)
 val secondary1 = Color(0xEEFCFDF8)
 val primary1 = Color(0xFFFF0056)
 val primary2 = Color(0xFF31A9B9)
+val primary3 = Color(0xff007EFC)
 val onSecondary = Color(0xFf37966f)
 
 val translucentColor = Color(0x00FFFFFF)

@@ -9,6 +9,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -107,21 +108,21 @@ publishers= Publisher(publisherId = 1L,"","") ,
        AnimatedVisibility(
            visible = true, // Set to true to make it visible in the preview
        ) {
-           HomeScreenContent(event = listOf(sampleEvent,sampleEvent,sampleEvent), onItemClick = { sampleEvent->
-               sampleEvent
-           }, animatedVisibilityScope = this,
-               onShareClick = {},
-               refresh = {},
-               category = listOf(EventCategory(1L, "Sports")),
-               isloading = true
-           )
+//           HomeScreenContent(event = listOf(sampleEvent,sampleEvent,sampleEvent), onItemClick = { sampleEvent->
+//               sampleEvent
+//           }, animatedVisibilityScope = this,
+//               onShareClick = {},
+//               refresh = {},
+//               category = listOf(EventCategory(1L, "Sports")),
+//               isloading = true
+//           )
        }
    }
 }
 
 
 @Composable
-fun HomeScreenContent(
+fun SharedTransitionScope.HomeScreenContent(
 
     event: List<Event>,
     category: List<EventCategory>,
@@ -261,7 +262,7 @@ fun CategoryRow(
 
 
 @Composable
-fun EventList(
+fun SharedTransitionScope.EventList(
     events: List<Event>,
     onShareClick: (Event) -> Unit,
     modifier: Modifier, onItemClick: (Event)-> Unit,
@@ -301,7 +302,7 @@ fun EventList(
 
 
 @Composable
-fun ItemCard(
+fun SharedTransitionScope.ItemCard(
     id: Long?,
     image: String?,
     title: String,
@@ -350,7 +351,7 @@ fun ItemCard(
 
     val lightenedColor = backgroundColor
 
-    SharedTransitionLayout {
+
         Card(
             modifier = modifier
                 .fillMaxWidth()
@@ -382,13 +383,14 @@ fun ItemCard(
                             .padding(8.dp)
                             .aspectRatio(1 / 1f)
                             .clip(shape = RoundedCornerShape(12.dp))
-                            .sharedElement(
-                                state = rememberSharedContentState(key = "eventart$image"),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                                boundsTransform = { initial, target ->
-                                    tween(durationMillis = 3000)
-                                }
-                            ),
+//                            .sharedElement(
+//                                state = rememberSharedContentState(key = "eventart${image}"),
+//                                animatedVisibilityScope = animatedVisibilityScope,
+//                                boundsTransform = { initial, target ->
+//                                    tween(durationMillis = 100)
+//                                }
+//                            )
+                            ,
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -414,7 +416,13 @@ fun ItemCard(
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.secondary,
-                            maxLines = 1
+                            maxLines = 1,
+                            modifier = modifier
+//                                .sharedElement(
+//                                state = rememberSharedContentState(key = "event title"),
+//                                animatedVisibilityScope = animatedVisibilityScope,
+//                                boundsTransform = { _, _ -> tween(durationMillis = 100) }
+//                            )
                         )
 
                     }
@@ -496,7 +504,7 @@ fun ItemCard(
                     }
                 }
             }
-        }
+
     }
 
 }

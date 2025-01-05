@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -66,7 +67,7 @@ import com.minorproject.eventgaze.ui.screens.user.detailScreen.DetailScreenForLi
 import com.minorproject.eventgaze.ui.screens.user.homescreen.MainScreenViewModel
 import com.minorproject.eventgaze.ui.screens.user.profilescreen.PiScreen
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
-
+const val FAB_EXPLODE_BOUNDS_KEY = "FAB_EXPLODE_BOUNDS_KEY"
 @Composable
 fun rememberAppState(
     snackbarHostState: SnackbarHostState = remember {SnackbarHostState()},
@@ -145,7 +146,7 @@ val context = LocalContext.current
                 },
             ) { innerPaddingModifier ->
                 val innerPadding = innerPaddingModifier
-                SharedTransitionScope {
+                SharedTransitionLayout {
                     NavHost(
                         navController = appState.navController,
                         startDestination = SplashScreen,
@@ -176,7 +177,7 @@ val context = LocalContext.current
                             MainScreen(
                                 navigate = { route -> appState.navigate(route) },
                                 restartApp = { route -> appState.clearAndNavigate(route) },
-                                animatedVisibilityScope = this@composable,
+                                animatedVisibilityScope = this,
                                 eventUiState = eventViewModel.eventUiState,
                                 retryAction = eventViewModel::getEvents,
                                 categoryUiState = eventViewModel.categoryUiState,
@@ -203,7 +204,7 @@ val context = LocalContext.current
                             }
                             if (event != null) {
                                 DetailScreen(
-                                    animatedVisibilityScope = this@composable,
+                                    animatedVisibilityScope = this,
                                     event = event,
                                     popUp = { appState.popUp() }
                                 )
@@ -239,7 +240,7 @@ val context = LocalContext.current
                                 navigate = { route -> appState.navigate(route) },
                                 eventUiState = eventViewModel.eventUiState,
                                 retryAction = eventViewModel::getEvents,
-                                animatedVisibilityScope = this@composable
+                                animatedVisibilityScope = this
                             )
                         }
                         composable(ProfileScreenP) {
@@ -253,7 +254,13 @@ val context = LocalContext.current
                         composable(AddEventScreen) {
                             AddEventScreen(
                                 popUp = { appState.popUp() },
-                                retry = eventViewModel::getEvents
+                                retry = eventViewModel::getEvents,
+                                modifier = Modifier.sharedBounds(
+                                    sharedContentState = rememberSharedContentState(
+                                        key = FAB_EXPLODE_BOUNDS_KEY
+                                    ),
+                            animatedVisibilityScope = this
+                            )
                             )
                         }
                         composable("$DetailScreenForLinks/{eventId}",

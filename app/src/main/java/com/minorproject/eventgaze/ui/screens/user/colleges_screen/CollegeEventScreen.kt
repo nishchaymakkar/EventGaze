@@ -136,7 +136,7 @@ fun SharedTransitionScope.CollegeEventScreen(
                         durationMillis = (textWidth / 20f * 1000).toInt(),
                         easing = LinearEasing,
                     ),
-                    repeatMode = RepeatMode.Restart
+//                    repeatMode = RepeatMode.Restart
                 )
             )
            infiniteTransition.label // Reset offset for seamless looping
@@ -146,28 +146,26 @@ fun SharedTransitionScope.CollegeEventScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row (modifier = Modifier.padding(start = 20.dp, end = 8.dp)){
+
+                   Row  {
                         Text(
                             text = college.collegeName,
-                            //style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary,
-                            minLines = 1,
                             maxLines = 1,
-                            fontSize = 8.sp,
-                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .padding(10.dp)
-                              .offset(textOffset.value.dp)
-
+//                                .offset(textOffset.value.dp)
                         )
+                    }
 
 
-                }},
+                },
                 navigationIcon = {
                     IconButton(
                         onClick = {  popUp()},
-                        modifier = Modifier.padding(8.dp)
+                        modifier = Modifier
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
@@ -276,7 +274,9 @@ fun LazyListScope.EventList(
 
 
             Box(
-                modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
 
             )   {
 

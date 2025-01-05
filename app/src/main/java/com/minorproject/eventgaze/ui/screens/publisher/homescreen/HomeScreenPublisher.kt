@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,6 +43,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -90,6 +92,7 @@ import com.minorproject.eventgaze.R
 import com.minorproject.eventgaze.modal.data.College
 import com.minorproject.eventgaze.modal.data.Event
 import com.minorproject.eventgaze.modal.data.EventCategory
+import com.minorproject.eventgaze.ui.FAB_EXPLODE_BOUNDS_KEY
 import com.minorproject.eventgaze.ui.screens.user.colleges_screen.isColorTooLight
 import com.minorproject.eventgaze.ui.screens.user.homescreen.ErrorScreen
 import com.minorproject.eventgaze.ui.screens.user.homescreen.EventUiState
@@ -122,14 +125,14 @@ private fun HomeScreenPreview() {
         AnimatedVisibility(
             visible = true
         ){
-            HomeScreen(navigate = {}, eventUiState = eventUiState, retryAction = {}, animatedVisibilityScope = this)
+           // HomeScreen(navigate = {}, eventUiState = eventUiState, retryAction = {}, animatedVisibilityScope = this)
 
         }
             }
 }
 @ExperimentalSharedTransitionApi
 @Composable
-fun HomeScreen(
+fun SharedTransitionScope.HomeScreen(
     modifier: Modifier = Modifier,
     navigate: (String) -> Unit,
     eventUiState: EventUiState,
@@ -153,7 +156,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeScreenContentPublisher(animatedVisibilityScope: AnimatedVisibilityScope,
+fun SharedTransitionScope.HomeScreenContentPublisher(animatedVisibilityScope: AnimatedVisibilityScope,
                               modifier: Modifier = Modifier,
                                navigate: (String) -> Unit,
                                eventUiState: EventUiState,
@@ -195,16 +198,24 @@ fun HomeScreenContentPublisher(animatedVisibilityScope: AnimatedVisibilityScope,
             ),
             title = {   Text(text = stringResource(R.string.publishedevents),
                 style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.secondary,) },
-            actions = { Icon(imageVector = Icons.Default.AccountCircle, tint = MaterialTheme.colorScheme.secondary,
+            actions = {
+                Icon(imageVector = Icons.Default.Person,
+                    tint = MaterialTheme.colorScheme.secondary,
                 modifier = modifier
-                    .size(30.dp)
+                    .padding(10.dp)
                     .clickable(onClick = { viewModel.onProfileClick(navigate) })
                 ,contentDescription = null)
             }
         )
     },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onAddEventClick(navigate)},modifier.padding(16.dp),
+            FloatingActionButton(onClick = { viewModel.onAddEventClick(navigate)},modifier.padding(16.dp)
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(
+                        key = FAB_EXPLODE_BOUNDS_KEY
+                    ),
+                    animatedVisibilityScope = animatedVisibilityScope
+                ),
                 containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
                 Icon(imageVector = Icons.Default.EventNote, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                 //Text("Publish", modifier = modifier.padding(paddingValues = PaddingValues(0.dp)))

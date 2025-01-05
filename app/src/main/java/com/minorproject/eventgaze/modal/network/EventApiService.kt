@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 
-private const val BASE_URL = "http://192.168.1.4:8080/eventgaze/"
+private const val BASE_URL = "http://192.168.1.5:8080/eventgaze/"
 
 
 

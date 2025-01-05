@@ -40,7 +40,7 @@ class EventGazeAppState(
     fun navigateAndPopUp(route: String, popUp: String) {
         navController.navigate(route) {
             launchSingleTop = true
-            popUpTo(popUp) { inclusive = true }
+            popUpTo(0) { inclusive = true }
         }
     }
 

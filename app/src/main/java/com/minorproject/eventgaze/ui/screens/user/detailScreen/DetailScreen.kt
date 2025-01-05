@@ -9,6 +9,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.IconButton
@@ -46,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -80,7 +84,7 @@ private fun DetailScreenPreview() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun DetailScreen(
+fun SharedTransitionScope.DetailScreen(
 
     popUp: ()-> Unit,
     event: Event?,
@@ -143,18 +147,18 @@ fun DetailScreen(
                                     contentScale = ContentScale.Crop,
                                     modifier = modifier
                                         .aspectRatio(1 / 1f)
-                                    //.clip(shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
+                                   // .clip(shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
 
 //                                    .sharedElement(
 //                                        state = rememberSharedContentState(key = "eventart${event?.eventArt}"),
 //                                        animatedVisibilityScope = animatedVisibilityScope,
-//                                        boundsTransform = { intital, target -> tween(durationMillis = 5000) }
+//                                        boundsTransform = { intital, target -> tween(durationMillis = 100) }
 //                                    )
                                 )
                             }
                             item {
                                 Row(
-                                    modifier = modifier
+                                    modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(
                                             start = 16.dp,
@@ -170,9 +174,9 @@ fun DetailScreen(
                                         color =MaterialTheme.colorScheme.secondary,
                                         modifier = Modifier
 //                                        .sharedElement(
-//                                        state = rememberSharedContentState(key = event.eventName),
+//                                        state = rememberSharedContentState(key = "event title"),
 //                                        animatedVisibilityScope = animatedVisibilityScope,
-//                                        boundsTransform = { _, _ -> tween(durationMillis = 1000) }
+//                                        boundsTransform = { _, _ -> tween(durationMillis = 100) }
 //                                    )
                                     )
                                 }
@@ -182,7 +186,7 @@ fun DetailScreen(
                             }
                             item {
                                 Row(
-                                    modifier
+                                    Modifier
                                         .fillMaxWidth()
                                         .padding(
                                             start = 16.dp,
@@ -196,7 +200,7 @@ fun DetailScreen(
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
-                                    Spacer(modifier.width(10.dp))
+                                    Spacer(Modifier.width(10.dp))
                                     if (event != null) {
                                         Text(
                                             text = event.eventDate ?: "dd mm yyyy",
@@ -208,7 +212,7 @@ fun DetailScreen(
                             }
                             item{
                                 Row(
-                                    modifier
+                                    Modifier
                                         .fillMaxWidth()
                                         .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                                     verticalAlignment = Alignment.Top
@@ -218,7 +222,7 @@ fun DetailScreen(
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
-                                    Spacer(modifier.width(10.dp))
+                                    Spacer(Modifier.width(10.dp))
                                     if (event != null) {
                                         Text(
                                             text = event.eventVenue ?: "unexpected location",
@@ -232,7 +236,7 @@ fun DetailScreen(
                             }
                             item  {
                                 Row(
-                                    modifier = modifier
+                                    modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp)
                                 ) {
@@ -269,7 +273,7 @@ fun DetailScreen(
                                 Row(
                                     horizontalArrangement = Arrangement.Start,
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = modifier
+                                    modifier = Modifier
                                         .padding(16.dp)
                                         .fillMaxWidth(),
                                 ) {

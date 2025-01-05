@@ -95,6 +95,7 @@ import com.minorproject.eventgaze.modal.data.EventCategory
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.NavigateBefore
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
@@ -114,7 +115,7 @@ import com.minorproject.eventgaze.ui.screens.user.homescreen.CollegeUiState
 private fun AddEventScreenPreview() {
 
     EventGazeTheme {
-        AddEventScreen(popUp = {}, retry = {})
+        AddEventScreen(popUp = {}, modifier = Modifier, retry = {})
     }
 }
 @ExperimentalPermissionsApi
@@ -123,7 +124,7 @@ private fun AddEventScreenPreview() {
 @Composable
 
 fun AddEventScreen(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     popUp: () -> Unit,
     retry: () -> Unit,
     viewModel: AddEventViewModel = hiltViewModel()
@@ -156,14 +157,16 @@ fun AddEventScreen(
     }
 
   Scaffold(
+      modifier = modifier,
       topBar = {
           TopAppBar(
               title = {},
               navigationIcon = {
                   Icon(
-                      imageVector = Icons.Default.NavigateBefore,
+                      imageVector = Icons.Default.ArrowBack,
                       contentDescription = null,
-                      modifier = Modifier.size(30.dp).clickable { viewModel.popUp(popUp) },
+                      modifier = Modifier.clickable { viewModel.popUp(popUp) }
+                          .padding(10.dp),
                       tint = MaterialTheme.colorScheme.secondary
                   )
               },
@@ -177,7 +180,7 @@ fun AddEventScreen(
       }
   ){it ->
         Column(
-            modifier
+            Modifier
                 .fillMaxSize().padding(it)
                 .verticalScroll(rememberScrollState())
                 .background(color = MaterialTheme.colorScheme.onPrimary),
@@ -185,7 +188,7 @@ fun AddEventScreen(
         ) {
             if (isUploading) {
                 LinearProgressIndicator(
-                    modifier = modifier.fillMaxWidth().padding(8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -201,7 +204,7 @@ fun AddEventScreen(
             EventNameTextField(
                 value = addEventUiState.value.eventName,
                 onNewValue = viewModel::onEventNameChange,
-                modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             )
 
             DropdownCategoryTextField(
@@ -219,18 +222,18 @@ fun AddEventScreen(
             EventTagsField(
                 value = addEventUiState.value.eventTags,
                 onNewValue = viewModel::onEventTagsChange,
-                modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             )
 
             EventDescriptionTextField(
                 value = addEventUiState.value.eventDescription,
                 onNewValue = viewModel::onEventDescriptionChange,
-                modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
             )
 
             PublishButton(
                 text = "Publish",
-                modifier = modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 action = {
                     viewModel.publishEvent(
                         context = context,
