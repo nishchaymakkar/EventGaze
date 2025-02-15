@@ -41,11 +41,6 @@ Event Gaze is an Android application designed for students to discover and publi
 
 Ensure your backend API is running and update the API URLs in the app's configuration file.
 
-## Issues & Troubleshooting
-
-- **Image Not Uploading:** Ensure correct multipart request handling.
-- **Date Format Error:** Follow `dd-MM-yyyy` format.
-- **Navigation Issues:** Debug navigation setup in `EventGazeAppState`.
 
 ## Contribution
 
