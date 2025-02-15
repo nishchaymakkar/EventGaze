@@ -17,11 +17,6 @@ Event Gaze is an Android application designed for students to discover and publi
 <img src="https://github.com/user-attachments/assets/63fbfc1c-b70f-4fa2-95ca-fcf8fcf96b03" width="200"/>
 <img src="https://github.com/user-attachments/assets/118fb610-bc31-44ac-88f3-bc9f8deacd76" width="200"/>
 
-![IMG_20250216_00445389]()
-
-![IMG_20250216_00453226]()
-
-
 ## Tech Stack
 
 - **Frontend**:
