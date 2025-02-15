@@ -11,7 +11,7 @@ Event Gaze is an Android application designed for students to discover and publi
 - **Dark Theme with Glassmorphism UI**: A modern and minimalistic design.
 - **Pull-to-Refresh**: Refresh event lists dynamically.
 - **Image Upload Support**: Events can include images using multipart requests.
-- **Firebase Integration**: Authentication and backend services using Firebase.
+- **Firebase Integration**: Authentication and backend services using Springboot.
   
 ## Screenshots
 
