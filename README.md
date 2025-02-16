@@ -49,8 +49,7 @@ Ensure your backend API is running and update the API URLs in the app's configur
 Contributions are welcome! Feel free to fork the repository, create a feature branch, and submit a pull request.
 
 ## License
-
-This project is licensed under the MIT License.
+- This project is open-source and available under the MIT License. [MIT License](LICENSE)
 
 ---
 Made with ❤️ by Nishchay Makkar and Contributors.
