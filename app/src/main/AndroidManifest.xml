@@ -21,7 +21,7 @@
         >
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleInstancePerTask"
+            android:launchMode="singleTop"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,5 +41,10 @@
 
         </activity>
     </application>
-
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SEND"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
 </manifest>

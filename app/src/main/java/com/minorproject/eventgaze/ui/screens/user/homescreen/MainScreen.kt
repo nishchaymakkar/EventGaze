@@ -145,7 +145,7 @@ fun SharedTransitionScope.MainScreen(
                     when (selectedItemIndex) {
                         0 -> {
                             when (eventUiState) {
-                                is EventUiState.Loading -> CircularProgressIndicator()
+                                is EventUiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                                 is EventUiState.Error -> {
                                     println("Error: ${eventUiState.error}")
                                     ErrorScreen(
@@ -228,10 +228,9 @@ fun ErrorScreen(modifier: Modifier = Modifier,retryAction: ()-> Unit) {
 }
 
 fun shareEvent(context: Context, shareLink: String) {
-    val shareIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT,shareLink)
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, shareLink)
     }
     context.startActivity(Intent.createChooser(shareIntent, null))
 }

@@ -2,6 +2,9 @@ package com.minorproject.eventgaze.ui.screens.common.loginscreen
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.media.MediaParser
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,14 +39,20 @@ import com.minorproject.eventgaze.ui.common.components.OrDivider
 import com.minorproject.eventgaze.ui.theme.EventGazeTheme
 import android.os.Build
 import android.util.Log
+import android.view.Gravity
+import android.widget.FrameLayout
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.minorproject.eventgaze.ui.common.ComplexGradientBackground
@@ -113,10 +122,17 @@ fun SignInScreenContent(modifier: Modifier = Modifier,
 
    Box(Modifier.fillMaxSize()) {
        ComplexGradientBackground()
+
         Column(
             modifier = modifier
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf( Color.Transparent,
+                        Color.Black)
+                    )
+                )
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Bottom
 //            .verticalScroll(
 //                rememberScrollState()
 //            ),

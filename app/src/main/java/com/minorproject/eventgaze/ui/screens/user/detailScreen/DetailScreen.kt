@@ -114,7 +114,7 @@ fun SharedTransitionScope.DetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor =  if (lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 0) {
+                    containerColor =  if (lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset>0) {
                         MaterialTheme.colorScheme.onPrimary // Color for scrolled state
                     } else {
                         Color.Transparent // Transparent for initial state

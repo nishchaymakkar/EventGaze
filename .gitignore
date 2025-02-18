@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/java/com/minorproject/eventgaze/ui/common/components/VideoBackground.kt
+app/src/main/res/xml/network_security_config.xml

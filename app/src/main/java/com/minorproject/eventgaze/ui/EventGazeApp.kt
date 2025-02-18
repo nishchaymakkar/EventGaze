@@ -6,9 +6,17 @@ import android.content.res.Resources
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -42,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
@@ -151,7 +160,7 @@ val context = LocalContext.current
                         navController = appState.navController,
                         startDestination = SplashScreen,
                     ) {
-                        composable(SplashScreen) {
+                        composable(route = SplashScreen) {
                             SplashScreen(openAndPopUp = { route, popUp ->
                                 appState.navigateAndPopUp(
                                     route,
@@ -173,7 +182,7 @@ val context = LocalContext.current
                                 popUp = { appState.popUp() })
                         }
 
-                        composable(MainScreen) {
+                        composable(MainScreen, enterTransition = { scaleIntoContainer() }, exitTransition = { scaleOutOfContainer() }) {
                             MainScreen(
                                 navigate = { route -> appState.navigate(route) },
                                 restartApp = { route -> appState.clearAndNavigate(route) },
@@ -283,3 +292,24 @@ val context = LocalContext.current
         }
         }
     }
+fun scaleIntoContainer(
+    direction: AnimatedContentTransitionScope.SlideDirection = AnimatedContentTransitionScope.SlideDirection.Start,
+    initialScale: Float = if (direction == AnimatedContentTransitionScope.SlideDirection.Start) 0.9f else 1.1f
+): EnterTransition {
+    return scaleIn(
+        animationSpec = tween(220, delayMillis = 90),
+        initialScale = initialScale
+    ) + fadeIn(animationSpec = tween(220, delayMillis = 90))
+}
+
+fun scaleOutOfContainer(
+    direction: AnimatedContentTransitionScope.SlideDirection = AnimatedContentTransitionScope.SlideDirection.Start,
+    targetScale: Float = if (direction == AnimatedContentTransitionScope.SlideDirection.Start) 0.9f else 1.1f
+): ExitTransition {
+    return scaleOut(
+        animationSpec = tween(
+            durationMillis = 220,
+            delayMillis = 90
+        ), targetScale = targetScale
+    ) + fadeOut(tween(delayMillis = 90))
+}
